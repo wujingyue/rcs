@@ -9,12 +9,10 @@
 using namespace llvm;
 
 namespace llvm {
-
 	struct IDTagger: public ModulePass {
-
 		static char ID;
 
-		IDTagger(): ModulePass(&ID) {}
+		IDTagger(): ModulePass(ID) {}
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 		virtual bool runOnModule(Module &M);
 	};

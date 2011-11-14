@@ -54,7 +54,7 @@ namespace llvm {
 
 		static char ID;
 
-		Reachability(): ModulePass(&ID) {}
+		Reachability(): ModulePass(ID) {}
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 		virtual bool runOnModule(Module &M);
 		// Returns whether a thread may go from Instruction <start> to

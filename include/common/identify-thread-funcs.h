@@ -10,7 +10,7 @@ namespace llvm {
 	struct IdentifyThreadFuncs: public ModulePass {
 		static char ID;
 
-		IdentifyThreadFuncs(): ModulePass(&ID) {}
+		IdentifyThreadFuncs(): ModulePass(ID) {}
 
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 		virtual bool runOnModule(Module &M);

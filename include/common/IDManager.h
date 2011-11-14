@@ -18,7 +18,7 @@ namespace llvm {
 		static char ID;
 		static const unsigned INVALID_ID = (unsigned)-1;
 
-		IDManager(): ModulePass(&ID) {}
+		IDManager(): ModulePass(ID) {}
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 		virtual bool runOnModule(Module &M);
 		virtual void print(raw_ostream &O, const Module *M) const;

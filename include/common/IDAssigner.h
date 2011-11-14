@@ -15,7 +15,7 @@ namespace llvm {
 		static char ID;
 		static const unsigned INVALID_ID = -1;
 
-		IDAssigner(): ModulePass(&ID) {}
+		IDAssigner(): ModulePass(ID) {}
 
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const {
 			AU.setPreservesAll();

@@ -61,13 +61,12 @@ namespace llvm {
 	};
 
 	struct MicroBasicBlockBuilder: public ModulePass {
-
 		static char ID;
 
 		typedef iplist<MicroBasicBlock> MBBListType;
 		typedef DenseMap<BasicBlock*, MBBListType*> mbbmap_t;
 
-		MicroBasicBlockBuilder(): ModulePass(&ID) {}
+		MicroBasicBlockBuilder(): ModulePass(ID) {}
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const { 
 			AU.setPreservesAll(); 
 			ModulePass::getAnalysisUsage(AU);      

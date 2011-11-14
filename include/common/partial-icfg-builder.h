@@ -21,12 +21,10 @@
 using namespace llvm;
 
 namespace llvm {
-
 	struct PartialICFGBuilder: public ModulePass, public ICFG {
-
 		static char ID;
 
-		PartialICFGBuilder(): ModulePass(&ID) {}
+		PartialICFGBuilder(): ModulePass(ID) {}
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 		virtual bool runOnModule(Module &M);
 		/** 
@@ -35,8 +33,8 @@ namespace llvm {
 		 * should override this to adjust the this pointer as needed for the
 		 * specified pass info.
 		 */
-		virtual void *getAdjustedAnalysisPointer(const PassInfo *PI) {   
-			if (PI->isPassID(&ICFG::ID))
+		virtual void *getAdjustedAnalysisPointer(AnalysisID PI) {   
+			if (PI == &ICFG::ID)
 				return (ICFG *)this;
 			return this;
 		}

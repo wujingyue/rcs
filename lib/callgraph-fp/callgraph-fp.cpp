@@ -172,7 +172,7 @@ bool CallGraphFP::runOnModule(Module &M) {
 	called_funcs.clear();
 	call_sites.clear();
 	forallinst(M, ins) {
-		CallSite cs = CallSite::get(ins);
+		CallSite cs(ins);
 		if (cs.getInstruction())
 			process_call_site(cs, all_funcs);
 	}
@@ -202,7 +202,7 @@ void CallGraphFP::add_extra_call_edges(Module &M) {
 		}
 		forall(Function, bb, *caller) {
 			forall(BasicBlock, ins, *bb) {
-				CallSite cs = CallSite::get(ins);
+				CallSite cs(ins);
 				if (cs.getInstruction() && !cs.getCalledFunction()) {
 					Value *fp = cs.getCalledValue();
 					assert(fp);

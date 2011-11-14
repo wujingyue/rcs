@@ -73,7 +73,7 @@ namespace llvm {
 	}
 
 	static inline bool is_pthread_create(const Instruction *I) {
-		CallSite cs = CallSite::get(const_cast<Instruction *>(I));
+		CallSite cs(const_cast<Instruction *>(I));
 		// Not even a call/invoke. 
 		if (!cs.getInstruction())
 			return false;
@@ -90,25 +90,25 @@ namespace llvm {
 
 	static inline Value *get_pthread_create_callee(const Instruction *I) {
 		assert(is_pthread_create(I));
-		CallSite cs = CallSite::get(const_cast<Instruction *>(I));
+		CallSite cs(const_cast<Instruction *>(I));
 		return cs.getArgument(cs.arg_size() == 4 ? 2 : 4);
 	}
 
 	static inline Value *get_pthread_create_arg(const Instruction *I) {
 		assert(is_pthread_create(I));
-		CallSite cs = CallSite::get(const_cast<Instruction *>(I));
+		CallSite cs(const_cast<Instruction *>(I));
 		return cs.getArgument(cs.arg_size() == 4 ? 3 : 5);
 	}
 
 	static inline void set_pthread_create_callee(Instruction *I, Value *callee) {
 		assert(is_pthread_create(I));
-		CallSite cs = CallSite::get(I);
+		CallSite cs(I);
 		cs.setArgument((cs.arg_size() == 4 ? 2 : 4), callee);
 	}
 
 	static inline void set_pthread_create_arg(Instruction *I, Value *arg) {
 		assert(is_pthread_create(I));
-		CallSite cs = CallSite::get(I);
+		CallSite cs(I);
 		cs.setArgument((cs.arg_size() == 4 ? 3 : 5), arg);
 	}
 
@@ -126,16 +126,6 @@ namespace llvm {
 		const Function *f = i->getParent()->getParent();
 		return i == f->begin()->begin();
 	}
-
-	// Copied from LLVM 2.9
-	template <> struct DenseMapInfo<int> {
-		static inline int getEmptyKey() { return 0x7fffffff; }
-		static inline int getTombstoneKey() { return -0x7fffffff - 1; }
-		static unsigned getHashValue(const int& Val) { return (unsigned)(Val * 37); }
-		static bool isEqual(const int& LHS, const int& RHS) {
-			return LHS == RHS;
-		}
-	};
 
 	template <> struct DenseMapInfo<string> {
 		static inline string getEmptyKey() { return ""; }

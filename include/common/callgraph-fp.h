@@ -25,12 +25,12 @@ namespace llvm {
 
 		static char ID;
 
-		explicit CallGraphFP(char *ID):
+		explicit CallGraphFP(char &ID):
 			ModulePass(ID), root(NULL), extern_calling_node(NULL),
 			calls_extern_node(NULL) {}
 
 		CallGraphFP():
-			ModulePass(&ID), root(NULL), extern_calling_node(NULL),
+			ModulePass(ID), root(NULL), extern_calling_node(NULL),
 			calls_extern_node(NULL) {}
 
 		// Interfaces of ModulePass
@@ -43,8 +43,8 @@ namespace llvm {
 		 * should override this to adjust the this pointer as needed for the
 		 * specified pass info.
 		 */
-		virtual void *getAdjustedAnalysisPointer(const PassInfo *PI) {   
-			if (PI->isPassID(&CallGraph::ID))
+		virtual void *getAdjustedAnalysisPointer(AnalysisID PI) {   
+			if (PI == &CallGraph::ID)
 				return (CallGraph*)this;
 			return this;
 		}
