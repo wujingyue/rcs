@@ -8,14 +8,14 @@
 #include "llvm/ADT/Statistic.h"
 #include "common/util.h"
 #include "common/IDAssigner.h"
+#include "common/InitializePasses.h"
 using namespace llvm;
 
 #include <fstream>
 using namespace std;
 
-static RegisterPass<IDAssigner> X("assign-id",
-		"Assign a unique ID to each instruction and each value",
-		false, true);
+INITIALIZE_PASS(IDAssigner, "assign-id",
+		"Assign a unique ID to each instruction and each value", false, true)
 
 static cl::opt<bool> PrintInsts("print-insts",
 		cl::desc("Print the ID-instruction mapping"));
@@ -26,7 +26,16 @@ STATISTIC(NumInstructions, "Number of instructions");
 STATISTIC(NumValues, "Number of values");
 
 char IDAssigner::ID = 0;
+// static const unsigned INVALID_ID = -1; is not a definition. 
 const unsigned IDAssigner::INVALID_ID;
+
+void IDAssigner::getAnalysisUsage(AnalysisUsage &AU) const {
+	AU.setPreservesAll();
+}
+
+IDAssigner::IDAssigner(): ModulePass(ID) {
+	initializeIDAssignerPass(*PassRegistry::getPassRegistry());
+}
 
 bool IDAssigner::addValue(Value *V) {
 	if (ValueIDMapping.count(V))

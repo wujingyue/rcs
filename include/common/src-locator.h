@@ -1,3 +1,7 @@
+/**
+ * Author: Jingyue
+ */
+
 #ifndef __SOURCE_LOCATOR_H
 #define __SOURCE_LOCATOR_H
 
@@ -19,7 +23,7 @@ namespace llvm {
 		typedef DenseMap<SourceLoc, vector<Instruction *> > MapLocToIns;
 		typedef DenseMap<const Instruction *, SourceLoc> MapInsToLoc;
 
-		SourceLocator(): ModulePass(ID) {}
+		SourceLocator();
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 		virtual bool runOnModule(Module &M);
 		virtual void print(raw_ostream &O, const Module *M) const;

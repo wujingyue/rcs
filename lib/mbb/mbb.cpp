@@ -5,7 +5,12 @@
 
 #include "common/mbb.h"
 #include "common/util.h"
+#include "common/InitializePasses.h"
 using namespace llvm;
+
+MicroBasicBlockBuilder::MicroBasicBlockBuilder(): ModulePass(ID) {
+	initializeMicroBasicBlockBuilderPass(*PassRegistry::getPassRegistry());
+}
 
 MicroBasicBlock::iterator MicroBasicBlock::getFirstNonPHI() {
 	if (b == parent->begin())
@@ -52,5 +57,5 @@ mbb_iterator MicroBasicBlockBuilder::end(BasicBlock *bb) {
 
 char MicroBasicBlockBuilder::ID = 0;
 
-static llvm::RegisterPass<llvm::MicroBasicBlockBuilder>  X("mbbb",
-		"micro basic block builder");
+INITIALIZE_PASS(MicroBasicBlockBuilder, "mbbb",
+		"micro basic block builder", false, false)

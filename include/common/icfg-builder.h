@@ -17,7 +17,7 @@ namespace llvm {
 	struct ICFGBuilder: public ModulePass, public ICFG {
 		static char ID;
 
-		ICFGBuilder(): ModulePass(ID) {}
+		ICFGBuilder();
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 		virtual bool runOnModule(Module &M);
 	};

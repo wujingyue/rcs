@@ -16,6 +16,7 @@
 #include "common/util.h"
 #include "common/inter-reach.h"
 #include "common/IDAssigner.h"
+#include "common/InitializePasses.h"
 using namespace llvm;
 
 #include <iostream>
@@ -23,9 +24,12 @@ using namespace llvm;
 #include <fstream>
 using namespace std;
 
-static RegisterPass<llvm::Reachability> X("reach",
-		"Reachability Analysis",
-		false, true);
+INITIALIZE_PASS_BEGIN(Reachability, "reach",
+		"Reachability Analysis", false, true)
+INITIALIZE_PASS_DEPENDENCY(IDAssigner)
+INITIALIZE_PASS_DEPENDENCY(CallGraphFP)
+INITIALIZE_PASS_END(Reachability, "reach",
+		"Reachability Analysis", false, true)
 
 static cl::opt<string> InputFile("input",
 		cl::desc("The input file containing the start point and the cut"),
@@ -37,7 +41,10 @@ void Reachability::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequired<IDAssigner>();
 	AU.addRequired<CallGraphFP>();
-	ModulePass::getAnalysisUsage(AU);
+}
+
+Reachability::Reachability(): ModulePass(ID) {
+	initializeReachabilityPass(*PassRegistry::getPassRegistry());
 }
 
 bool Reachability::runOnModule(Module &M) {

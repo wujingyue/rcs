@@ -16,7 +16,7 @@ namespace llvm {
 	struct IntraReach: public FunctionPass {
 		static char ID;
 
-		IntraReach(): FunctionPass(ID) {}
+		IntraReach();
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 		virtual bool runOnFunction(Function &F);
 		/* Runs in linear time */

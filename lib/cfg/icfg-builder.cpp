@@ -6,17 +6,24 @@
 #include "common/icfg-builder.h"
 #include "common/callgraph-fp.h"
 #include "common/util.h"
+#include "common/InitializePasses.h"
 using namespace llvm;
 
-static RegisterPass<llvm::ICFGBuilder> X(
-		"icfg", "Build inter-procedural control flow graph",
-		false, true);
+INITIALIZE_PASS_BEGIN(ICFGBuilder, "icfg",
+		"Build inter-procedural control flow graph", false, true)
+INITIALIZE_PASS_DEPENDENCY(MicroBasicBlockBuilder)
+INITIALIZE_PASS_DEPENDENCY(CallGraphFP)
+INITIALIZE_PASS_END(ICFGBuilder, "icfg",
+		"Build inter-procedural control flow graph", false, true)
+
+ICFGBuilder::ICFGBuilder(): ModulePass(ID) {
+	initializeICFGBuilderPass(*PassRegistry::getPassRegistry());
+}
 
 void ICFGBuilder::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequired<MicroBasicBlockBuilder>();
 	AU.addRequired<CallGraphFP>();
-	ModulePass::getAnalysisUsage(AU);
 }
 
 bool ICFGBuilder::runOnModule(Module &M) {

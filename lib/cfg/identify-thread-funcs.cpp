@@ -1,20 +1,27 @@
 #include "common/identify-thread-funcs.h"
 #include "common/util.h"
+#include "common/InitializePasses.h"
 using namespace llvm;
 
 #include "bc2bdd/BddAliasAnalysis.h"
+#include "bc2bdd/InitializePasses.h"
 using namespace repair;
 
-static RegisterPass<IdentifyThreadFuncs> X("identify-thread-funcs",
-		"Identify thread functions",
-		false, true); // is analysis
+INITIALIZE_PASS_BEGIN(IdentifyThreadFuncs, "identify-thread-funcs",
+		"Identify thread functions", false, true)
+INITIALIZE_PASS_DEPENDENCY(BddAliasAnalysis)
+INITIALIZE_PASS_END(IdentifyThreadFuncs, "identify-thread-funcs",
+		"Identify thread functions", false, true)
 
 char IdentifyThreadFuncs::ID = 0;
 
 void IdentifyThreadFuncs::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequired<BddAliasAnalysis>();
-	ModulePass::getAnalysisUsage(AU);
+}
+
+IdentifyThreadFuncs::IdentifyThreadFuncs(): ModulePass(ID) {
+	initializeIdentifyThreadFuncsPass(*PassRegistry::getPassRegistry());
 }
 
 bool IdentifyThreadFuncs::runOnModule(Module &M) {

@@ -12,7 +12,7 @@ namespace llvm {
 	struct IDTagger: public ModulePass {
 		static char ID;
 
-		IDTagger(): ModulePass(ID) {}
+		IDTagger();
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 		virtual bool runOnModule(Module &M);
 	};

@@ -66,10 +66,9 @@ namespace llvm {
 		typedef iplist<MicroBasicBlock> MBBListType;
 		typedef DenseMap<BasicBlock*, MBBListType*> mbbmap_t;
 
-		MicroBasicBlockBuilder(): ModulePass(ID) {}
+		MicroBasicBlockBuilder();
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const { 
 			AU.setPreservesAll(); 
-			ModulePass::getAnalysisUsage(AU);      
 		}
 		virtual bool runOnModule(Module &M);
 

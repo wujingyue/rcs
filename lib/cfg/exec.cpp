@@ -9,18 +9,24 @@
 #include "common/callgraph-fp.h"
 #include "common/util.h"
 #include "common/reach.h"
+#include "common/InitializePasses.h"
 using namespace llvm;
 
 char Exec::ID = 0;
 
-static RegisterPass<Exec> X("exec",
-		"Test whether a function may or must execute a landmark",
-		false, true); // is analysis
+INITIALIZE_PASS_BEGIN(Exec, "exec",
+		"Test whether a function may or must execute a landmark", false, true)
+INITIALIZE_PASS_DEPENDENCY(CallGraphFP)
+INITIALIZE_PASS_END(Exec, "exec",
+		"Test whether a function may or must execute a landmark", false, true)
+
+Exec::Exec(): ModulePass(ID) {
+	initializeExecPass(*PassRegistry::getPassRegistry());
+}
 
 void Exec::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequiredTransitive<CallGraphFP>();
-	ModulePass::getAnalysisUsage(AU);
 }
 
 void Exec::setup_landmarks(const ConstInstSet &landmarks) {

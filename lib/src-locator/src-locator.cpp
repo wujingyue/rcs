@@ -1,3 +1,7 @@
+/**
+ * Author: Jingyue
+ */
+
 #include <iostream>
 using namespace std;
 
@@ -7,11 +11,14 @@ using namespace std;
 #include "common/util.h"
 #include "common/IDAssigner.h"
 #include "common/src-locator.h"
+#include "common/InitializePasses.h"
 using namespace llvm;
 
-static RegisterPass<SourceLocator> X("src-locator",
-		"From line number to instruction",
-		false, true);
+INITIALIZE_PASS_BEGIN(SourceLocator, "src-locator",
+		"From line number to instruction", false, true)
+INITIALIZE_PASS_DEPENDENCY(IDAssigner)
+INITIALIZE_PASS_END(SourceLocator, "src-locator",
+		"From line number to instruction", false, true)
 
 static cl::opt<string> Input("input",
 		cl::desc("Input"),
@@ -20,7 +27,10 @@ static cl::opt<string> Input("input",
 void SourceLocator::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequired<IDAssigner>();
-	ModulePass::getAnalysisUsage(AU);
+}
+
+SourceLocator::SourceLocator(): ModulePass(ID) {
+	initializeSourceLocatorPass(*PassRegistry::getPassRegistry());
 }
 
 bool SourceLocator::runOnModule(Module &M) {

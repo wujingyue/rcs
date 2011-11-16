@@ -9,18 +9,22 @@
 #include "llvm/DerivedTypes.h"
 #include "common/IDTagger.h"
 #include "common/util.h"
+#include "common/InitializePasses.h"
 using namespace llvm;
 
-static RegisterPass<IDTagger> X("tag-id",
-		"Assign each instruction a unique ID");
+INITIALIZE_PASS(IDTagger, "tag-id",
+		"Assign each instruction a unique ID", false, false)
 
 STATISTIC(NumInstructions, "Number of instructions");
 
 char IDTagger::ID = 0;
 
+IDTagger::IDTagger(): ModulePass(ID) {
+	initializeIDTaggerPass(*PassRegistry::getPassRegistry());
+}
+
 void IDTagger::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesCFG();
-	ModulePass::getAnalysisUsage(AU);
 }
 
 bool IDTagger::runOnModule(Module &M) {

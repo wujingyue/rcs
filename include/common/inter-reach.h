@@ -42,9 +42,7 @@ using namespace llvm;
 using namespace std;
 
 namespace llvm {
-
 	struct Reachability: public ModulePass {
-
 		typedef DenseMap<BasicBlock *, vector<BasicBlock *> > ParPostdomGraph;
 		typedef DenseMap<BasicBlock *, int> BBSCCMapping;
 		typedef vector<vector<BasicBlock *> > SCCBBMapping;
@@ -54,7 +52,7 @@ namespace llvm {
 
 		static char ID;
 
-		Reachability(): ModulePass(ID) {}
+		Reachability();
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 		virtual bool runOnModule(Module &M);
 		// Returns whether a thread may go from Instruction <start> to

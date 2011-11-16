@@ -19,8 +19,7 @@ namespace llvm {
 	struct Exec: public ModulePass {
 		static char ID;
 
-		Exec(): ModulePass(ID) {}
-
+		Exec();
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 		virtual bool runOnModule(Module &M);
 		virtual void print(llvm::raw_ostream &O, const Module *M) const;

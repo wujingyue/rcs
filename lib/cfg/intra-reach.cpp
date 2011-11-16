@@ -2,20 +2,23 @@
  * Author: Jingyue
  */
 
+#include "llvm/Support/CFG.h"
 #include "common/intra-reach.h"
 #include "common/util.h"
-#include "llvm/Support/CFG.h"
+#include "common/InitializePasses.h"
 using namespace llvm;
 
-static RegisterPass<IntraReach> X("intra-reach",
-		"Intra-procedural reachability analysis",
-		false, true);
+INITIALIZE_PASS(IntraReach, "intra-reach",
+		"Intra-procedural reachability analysis", false, true)
 
 char IntraReach::ID = 0;
 
+IntraReach::IntraReach(): FunctionPass(ID) {
+	initializeIntraReachPass(*PassRegistry::getPassRegistry());
+}
+
 void IntraReach::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
-	FunctionPass::getAnalysisUsage(AU);
 }
 
 bool IntraReach::runOnFunction(Function &F) {

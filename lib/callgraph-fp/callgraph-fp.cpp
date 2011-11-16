@@ -6,14 +6,18 @@ using namespace std;
 #include "llvm/Support/CommandLine.h"
 #include "common/callgraph-fp.h"
 #include "common/util.h"
+#include "common/InitializePasses.h"
 using namespace llvm;
 
 #include "bc2bdd/BddAliasAnalysis.h"
+#include "bc2bdd/InitializePasses.h"
 using namespace repair;
 
-static RegisterPass<CallGraphFP> X("callgraph-fp",
-		"Call graph that recognizes function pointers",
-		false, true); // is analysis
+INITIALIZE_PASS_BEGIN(CallGraphFP, "callgraph-fp",
+		"Call graph that recognizes function pointers", false, true)
+INITIALIZE_PASS_DEPENDENCY(BddAliasAnalysis)
+INITIALIZE_PASS_END(CallGraphFP, "callgraph-fp",
+		"Call graph that recognizes function pointers", false, true)
 
 static cl::opt<string> ExtraCallEdgesFile("extra-call-edges",
 		cl::desc("The file which contains the extra call edges that need be added "
@@ -24,7 +28,13 @@ char CallGraphFP::ID = 0;
 void CallGraphFP::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequired<BddAliasAnalysis>();
-	ModulePass::getAnalysisUsage(AU);
+}
+
+CallGraphFP::CallGraphFP():
+	ModulePass(ID), root(NULL), extern_calling_node(NULL),
+	calls_extern_node(NULL)
+{
+	initializeCallGraphFPPass(*PassRegistry::getPassRegistry());
 }
 
 void CallGraphFP::destroy() {

@@ -7,25 +7,32 @@
 #include "common/callgraph-fp.h"
 #include "common/util.h"
 #include "common/exec-once.h"
+#include "common/InitializePasses.h"
 using namespace llvm;
 
 #include <vector>
 using namespace std;
 
-static RegisterPass<ExecOnce> X("exec-once",
-		"Identify instructions that can be executed only once",
-		false, true);
+INITIALIZE_PASS_BEGIN(ExecOnce, "exec-once",
+		"Identify instructions that can be executed only once", false, true)
+INITIALIZE_AG_DEPENDENCY(CallGraph)
+INITIALIZE_PASS_DEPENDENCY(CallGraphFP)
+INITIALIZE_PASS_END(ExecOnce, "exec-once",
+		"Identify instructions that can be executed only once", false, true)
 
 STATISTIC(NumInstructionsNotExecuted, "Number of instructions not executed");
 STATISTIC(NumInstructions, "Number of instructions");
 
 char ExecOnce::ID = 0;
 
+ExecOnce::ExecOnce(): ModulePass(ID) {
+	initializeExecOncePass(*PassRegistry::getPassRegistry());
+}
+
 void ExecOnce::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequired<CallGraph>();
 	AU.addRequired<CallGraphFP>();
-	ModulePass::getAnalysisUsage(AU);
 }
 
 void ExecOnce::print(raw_ostream &O, const Module *M) const {

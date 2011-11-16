@@ -12,13 +12,11 @@
 using namespace llvm;
 
 namespace llvm {
-
 	struct IDManager: public ModulePass {
-
 		static char ID;
 		static const unsigned INVALID_ID = (unsigned)-1;
 
-		IDManager(): ModulePass(ID) {}
+		IDManager();
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 		virtual bool runOnModule(Module &M);
 		virtual void print(raw_ostream &O, const Module *M) const;

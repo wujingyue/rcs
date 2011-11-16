@@ -15,13 +15,8 @@ namespace llvm {
 		static char ID;
 		static const unsigned INVALID_ID = -1;
 
-		IDAssigner(): ModulePass(ID) {}
-
-		virtual void getAnalysisUsage(AnalysisUsage &AU) const {
-			AU.setPreservesAll();
-			ModulePass::getAnalysisUsage(AU);
-		}
-
+		IDAssigner();
+		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 		virtual bool runOnModule(Module& M);
 		virtual void print(raw_ostream &O, const Module *M) const;
 		void printInstructions(raw_ostream &O, const Module *M) const;

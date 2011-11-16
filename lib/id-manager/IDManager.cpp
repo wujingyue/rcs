@@ -1,16 +1,24 @@
+/**
+ * Author: Jingyue
+ */
+
 #include "common/IDManager.h"
 #include "common/util.h"
+#include "common/InitializePasses.h"
 using namespace llvm;
 
-static RegisterPass<IDManager> X("manage-id",
+INITIALIZE_PASS(IDManager, "manage-id",
 		"Find the instruction with a particular ID; Lookup the ID of an instruction",
-		false, true);
+		false, true)
 
 char IDManager::ID = 0;
 
 void IDManager::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
-	ModulePass::getAnalysisUsage(AU);
+}
+
+IDManager::IDManager(): ModulePass(ID) {
+	initializeIDManagerPass(*PassRegistry::getPassRegistry());
 }
 
 bool IDManager::runOnModule(Module &M) {

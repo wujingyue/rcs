@@ -25,13 +25,13 @@ namespace llvm {
 
 		static char ID;
 
+#if 0
 		explicit CallGraphFP(char &ID):
 			ModulePass(ID), root(NULL), extern_calling_node(NULL),
 			calls_extern_node(NULL) {}
+#endif
 
-		CallGraphFP():
-			ModulePass(ID), root(NULL), extern_calling_node(NULL),
-			calls_extern_node(NULL) {}
+		CallGraphFP();
 
 		// Interfaces of ModulePass
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
