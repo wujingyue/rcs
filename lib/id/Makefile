@@ -1,5 +1,6 @@
 LEVEL = ../..
-LIBRARYNAME = id-manager
+
+LIBRARYNAME = id
 
 LOADABLE_MODULE = 1
 BUILD_ARCHIVE = 1

@@ -125,3 +125,11 @@ void SourceLocator::print(raw_ostream &O, const Module *M) const {
 }
 
 char SourceLocator::ID = 0;
+
+struct RegisterSourceLocatorPass {
+	RegisterSourceLocatorPass() {
+		PassRegistry &reg = *PassRegistry::getPassRegistry();
+		initializeSourceLocatorPass(reg);
+	}
+};
+static RegisterSourceLocatorPass X;

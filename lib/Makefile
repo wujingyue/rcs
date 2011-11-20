@@ -1,5 +1,5 @@
 LEVEL = ..
 
-DIRS = callgraph-fp id-manager cfg src-locator mbb
+DIRS = id cfg src-locator
 
 include $(LEVEL)/Makefile.common
