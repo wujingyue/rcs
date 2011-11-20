@@ -5,7 +5,7 @@ using namespace llvm;
 
 #include "bc2bdd/BddAliasAnalysis.h"
 #include "bc2bdd/InitializePasses.h"
-using namespace repair;
+using namespace bc2bdd;
 
 INITIALIZE_PASS_BEGIN(IdentifyThreadFuncs, "identify-thread-funcs",
 		"Identify thread functions", false, true)

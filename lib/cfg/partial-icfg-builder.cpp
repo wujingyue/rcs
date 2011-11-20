@@ -13,7 +13,7 @@
 using namespace llvm;
 
 #include "bc2bdd/BddAliasAnalysis.h"
-using namespace repair;
+using namespace bc2bdd;
 
 INITIALIZE_PASS_BEGIN(PartialICFGBuilder, "partial-icfg-builder",
 		"Builds part of the ICFG", false, true)

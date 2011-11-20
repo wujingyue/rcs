@@ -11,7 +11,7 @@ using namespace llvm;
 
 #include "bc2bdd/BddAliasAnalysis.h"
 #include "bc2bdd/InitializePasses.h"
-using namespace repair;
+using namespace bc2bdd;
 
 INITIALIZE_PASS_BEGIN(CallGraphFP, "callgraph-fp",
 		"Call graph that recognizes function pointers", false, true)
