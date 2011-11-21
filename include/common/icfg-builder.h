@@ -9,11 +9,13 @@
 #define __ICFG_BUILDER_H
 
 #include "llvm/Pass.h"
+using namespace llvm;
+
 #include "common/mbb.h"
 #include "common/typedefs.h"
 #include "common/icfg.h"
 
-namespace llvm {
+namespace rcs {
 	struct ICFGBuilder: public ModulePass, public ICFG {
 		static char ID;
 

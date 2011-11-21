@@ -15,10 +15,12 @@ using namespace std;
 #include "llvm/Module.h"
 #include "llvm/Analysis/CallGraph.h"
 #include "llvm/ADT/DenseMap.h"
-#include "common/typedefs.h"
 using namespace llvm;
 
-namespace llvm {
+#include "common/typedefs.h"
+using namespace rcs;
+
+namespace rcs {
 	struct CallGraphFP: public ModulePass, public CallGraph {
 		typedef DenseMap<const Instruction *, FuncList> SiteFuncMapping;
 		typedef DenseMap<const Function *, InstList> FuncSiteMapping;

@@ -26,6 +26,9 @@
 #ifndef __REACH_H
 #define __REACH_H
 
+#include <vector>
+using namespace std;
+
 #include "llvm/Module.h"
 #include "llvm/LLVMContext.h"
 #include "llvm/DerivedTypes.h"
@@ -38,10 +41,7 @@
 #include "llvm/ADT/DenseSet.h"
 using namespace llvm;
 
-#include <vector>
-using namespace std;
-
-namespace llvm {
+namespace rcs {
 	struct Reachability: public ModulePass {
 		typedef DenseMap<BasicBlock *, vector<BasicBlock *> > ParPostdomGraph;
 		typedef DenseMap<BasicBlock *, int> BBSCCMapping;

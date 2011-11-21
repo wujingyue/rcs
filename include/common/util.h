@@ -15,6 +15,7 @@ using namespace std;
 #include "llvm/Function.h"
 #include "llvm/IntrinsicInst.h"
 #include "llvm/Support/CallSite.h"
+using namespace llvm;
 
 #define forit(it,c) for ((it) = (c).begin(); (it) != (c).end(); ++(it))
 
@@ -45,7 +46,22 @@ using namespace std;
 #define ARRAY_LEN(array) (sizeof(array)/sizeof(array[0]))
 
 namespace llvm {
+	template <> struct DenseMapInfo<string> {
+		static inline string getEmptyKey() { return ""; }
+		static inline string getTombstoneKey() { return "Tombstone"; }
+		static unsigned getHashValue(const string &S) {
+			unsigned Result = 0;
+			for (size_t I = 0; I < S.length(); ++I)
+				Result = Result * 37 + (unsigned)(S[I]);
+			return Result;
+		}
+		static bool isEqual(const string &S1, const string &S2) {
+			return S1 == S2;
+		}
+	};
+}
 
+namespace rcs {
 	template<class I, class C>
 	static inline bool exist(const I& i, const C& c) {
 		return c.find(i) != c.end();
@@ -126,20 +142,6 @@ namespace llvm {
 		const Function *f = i->getParent()->getParent();
 		return i == f->begin()->begin();
 	}
-
-	template <> struct DenseMapInfo<string> {
-		static inline string getEmptyKey() { return ""; }
-		static inline string getTombstoneKey() { return "Tombstone"; }
-		static unsigned getHashValue(const string &S) {
-			unsigned Result = 0;
-			for (size_t I = 0; I < S.length(); ++I)
-				Result = Result * 37 + (unsigned)(S[I]);
-			return Result;
-		}
-		static bool isEqual(const string &S1, const string &S2) {
-			return S1 == S2;
-		}
-	};
 }
 
 #endif

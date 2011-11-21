@@ -2,8 +2,8 @@
  * Author: Jingyue
  */
 
-#include "common/InitializePasses.h"
 #include "llvm/PassRegistry.h"
+#include "common/InitializePasses.h"
 using namespace llvm;
 
 struct RegisterCFGPasses {

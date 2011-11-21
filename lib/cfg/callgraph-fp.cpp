@@ -4,14 +4,16 @@
 using namespace std;
 
 #include "llvm/Support/CommandLine.h"
-#include "common/callgraph-fp.h"
-#include "common/util.h"
-#include "common/InitializePasses.h"
 using namespace llvm;
 
 #include "bc2bdd/BddAliasAnalysis.h"
 #include "bc2bdd/InitializePasses.h"
 using namespace bc2bdd;
+
+#include "common/callgraph-fp.h"
+#include "common/util.h"
+#include "common/InitializePasses.h"
+using namespace rcs;
 
 INITIALIZE_PASS_BEGIN(CallGraphFP, "callgraph-fp",
 		"Call graph that recognizes function pointers", false, true)

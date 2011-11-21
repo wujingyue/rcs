@@ -10,10 +10,12 @@
 
 #include "llvm/Module.h"
 #include "llvm/Pass.h"
-#include "common/typedefs.h"
 using namespace llvm;
 
-namespace llvm {
+#include "common/typedefs.h"
+using namespace rcs;
+
+namespace rcs {
 	struct ExecOnce: public ModulePass {
 		static char ID;
 

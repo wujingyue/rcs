@@ -3,11 +3,13 @@
  */
 
 #include "llvm/Support/CFG.h"
+using namespace llvm;
+
 #include "common/icfg-builder.h"
 #include "common/callgraph-fp.h"
 #include "common/util.h"
 #include "common/InitializePasses.h"
-using namespace llvm;
+using namespace rcs;
 
 INITIALIZE_PASS_BEGIN(ICFGBuilder, "icfg",
 		"Build inter-procedural control flow graph", false, true)

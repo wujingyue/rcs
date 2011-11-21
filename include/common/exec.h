@@ -15,7 +15,7 @@
 #include "common/util.h"
 #include "common/typedefs.h"
 
-namespace llvm {
+namespace rcs {
 	struct Exec: public ModulePass {
 		static char ID;
 

@@ -3,10 +3,12 @@
  */
 
 #include "llvm/Support/CFG.h"
-#include "common/intra-reach.h"
-#include "common/util.h"
 #include "common/InitializePasses.h"
 using namespace llvm;
+
+#include "common/intra-reach.h"
+#include "common/util.h"
+using namespace rcs;
 
 INITIALIZE_PASS(IntraReach, "intra-reach",
 		"Intra-procedural reachability analysis", false, true)

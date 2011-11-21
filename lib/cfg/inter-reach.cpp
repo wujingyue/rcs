@@ -2,6 +2,11 @@
  * Author: Jingyue
  */
 
+#include <iostream>
+#include <sstream>
+#include <fstream>
+using namespace std;
+
 #include "llvm/Module.h"
 #include "llvm/LLVMContext.h"
 #include "llvm/DerivedTypes.h"
@@ -12,17 +17,14 @@
 #include "llvm/Support/CFG.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
+#include "common/InitializePasses.h"
+using namespace llvm;
+
 #include "common/callgraph-fp.h"
 #include "common/util.h"
 #include "common/inter-reach.h"
 #include "common/IDAssigner.h"
-#include "common/InitializePasses.h"
-using namespace llvm;
-
-#include <iostream>
-#include <sstream>
-#include <fstream>
-using namespace std;
+using namespace rcs;
 
 INITIALIZE_PASS_BEGIN(Reachability, "reach",
 		"Reachability Analysis", false, true)
@@ -32,8 +34,7 @@ INITIALIZE_PASS_END(Reachability, "reach",
 		"Reachability Analysis", false, true)
 
 static cl::opt<string> InputFile("input",
-		cl::desc("The input file containing the start point and the cut"),
-		cl::init(""));
+		cl::desc("The input file containing the start point and the cut"));
 
 char Reachability::ID = 0;
 

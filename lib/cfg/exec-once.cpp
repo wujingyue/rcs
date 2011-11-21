@@ -1,17 +1,23 @@
+/**
+ * Author: Jingyue
+ */
+
 #define DEBUG_TYPE "exec"
+
+#include <vector>
+using namespace std;
 
 #include "llvm/ADT/SCCIterator.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/Support/raw_os_ostream.h"
 #include "llvm/Support/CFG.h"
+using namespace llvm;
+
 #include "common/callgraph-fp.h"
 #include "common/util.h"
 #include "common/exec-once.h"
 #include "common/InitializePasses.h"
-using namespace llvm;
-
-#include <vector>
-using namespace std;
+using namespace rcs;
 
 INITIALIZE_PASS_BEGIN(ExecOnce, "exec-once",
 		"Identify instructions that can be executed only once", false, true)

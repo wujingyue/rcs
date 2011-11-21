@@ -16,28 +16,19 @@
 #define __PARTIAL_ICFG_BUILDER_H
 
 #include "llvm/Pass.h"
-#include "common/icfg.h"
-#include "common/mbb.h"
 using namespace llvm;
 
-namespace llvm {
+#include "common/icfg.h"
+#include "common/mbb.h"
+using namespace rcs;
+
+namespace rcs {
 	struct PartialICFGBuilder: public ModulePass, public ICFG {
 		static char ID;
 
 		PartialICFGBuilder();
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 		virtual bool runOnModule(Module &M);
-		/** 
-		 * This method is used when a pass implements
-		 * an analysis interface through multiple inheritance.  If needed, it
-		 * should override this to adjust the this pointer as needed for the
-		 * specified pass info.
-		 */
-		virtual void *getAdjustedAnalysisPointer(AnalysisID PI) {   
-			if (PI == &ICFG::ID)
-				return (ICFG *)this;
-			return this;
-		}
 
 	private:
 		/*

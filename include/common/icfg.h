@@ -11,11 +11,13 @@
 using namespace std;
 
 #include "llvm/Pass.h"
+using namespace llvm;
+
 #include "common/mbb.h"
 #include "common/typedefs.h"
+using namespace rcs;
 
-namespace llvm {
-
+namespace rcs {
 	struct ICFG;
 
 	struct ICFGNode: public ilist_node<ICFGNode> {
@@ -53,9 +55,6 @@ namespace llvm {
 	};
 
 	struct ICFG {
-
-		static char ID;
-
 		typedef DenseMap<const MicroBasicBlock *, ICFGNode *> MBBToNode;
 		typedef iplist<ICFGNode>::iterator iterator;
 		typedef iplist<ICFGNode>::const_iterator const_iterator;
@@ -96,9 +95,10 @@ namespace llvm {
 		MBBToNode mbb_to_node;
 		iplist<ICFGNode> nodes;
 	};
+}
 
+namespace llvm {
 	template<> struct GraphTraits<ICFGNode *> {
-
 		typedef ICFGNode NodeType;
 		typedef ICFGNode::iterator ChildIteratorType;
 
@@ -108,7 +108,6 @@ namespace llvm {
 	};
 	
 	template<> struct GraphTraits<const ICFGNode *> {
-
 		typedef const ICFGNode NodeType;
 		typedef ICFGNode::const_iterator ChildIteratorType;
 
@@ -118,7 +117,6 @@ namespace llvm {
 	};
 
 	template<> struct GraphTraits<Inverse<ICFGNode *> > {
-
 		typedef ICFGNode NodeType;
 		typedef ICFGNode::iterator ChildIteratorType;
 
@@ -130,7 +128,6 @@ namespace llvm {
 	};
 	
 	template<> struct GraphTraits<Inverse<const ICFGNode *> > {
-
 		typedef const ICFGNode NodeType;
 		typedef ICFGNode::const_iterator ChildIteratorType;
 
@@ -142,15 +139,14 @@ namespace llvm {
 	};
 
 	template<> struct GraphTraits<ICFG *>: public GraphTraits<ICFGNode *> {
-		
 		typedef ICFG::iterator nodes_iterator;
 		static nodes_iterator nodes_begin(ICFG *icfg) { return icfg->begin(); }
 		static nodes_iterator nodes_end(ICFG *icfg) { return icfg->end(); }
 	};
 
 	template<> struct GraphTraits<const ICFG *>:
-		public GraphTraits<const ICFGNode *> {
-
+		public GraphTraits<const ICFGNode *>
+	{
 		typedef ICFG::const_iterator nodes_iterator;
 		static nodes_iterator nodes_begin(const ICFG *icfg) { return icfg->begin(); }
 		static nodes_iterator nodes_end(const ICFG *icfg) { return icfg->end(); }

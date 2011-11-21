@@ -11,7 +11,7 @@
 #include "common/typedefs.h"
 using namespace llvm;
 
-namespace llvm {
+namespace rcs {
 	struct IDManager: public ModulePass {
 		static char ID;
 		static const unsigned INVALID_ID = (unsigned)-1;

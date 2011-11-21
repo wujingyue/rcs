@@ -4,16 +4,18 @@
 
 #include "llvm/Support/CFG.h"
 #include "llvm/Support/CommandLine.h"
-#include "common/partial-icfg-builder.h"
-#include "common/exec-once.h"
-#include "common/callgraph-fp.h"
-#include "common/util.h"
 #include "common/InitializePasses.h"
 #include "bc2bdd/InitializePasses.h"
 using namespace llvm;
 
 #include "bc2bdd/BddAliasAnalysis.h"
 using namespace bc2bdd;
+
+#include "common/partial-icfg-builder.h"
+#include "common/exec-once.h"
+#include "common/callgraph-fp.h"
+#include "common/util.h"
+using namespace rcs;
 
 INITIALIZE_PASS_BEGIN(PartialICFGBuilder, "partial-icfg-builder",
 		"Builds part of the ICFG", false, true)

@@ -1,11 +1,13 @@
-#include "common/identify-thread-funcs.h"
-#include "common/util.h"
 #include "common/InitializePasses.h"
 using namespace llvm;
 
 #include "bc2bdd/BddAliasAnalysis.h"
 #include "bc2bdd/InitializePasses.h"
 using namespace bc2bdd;
+
+#include "common/identify-thread-funcs.h"
+#include "common/util.h"
+using namespace rcs;
 
 INITIALIZE_PASS_BEGIN(IdentifyThreadFuncs, "identify-thread-funcs",
 		"Identify thread functions", false, true)

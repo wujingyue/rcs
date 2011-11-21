@@ -3,10 +3,12 @@
  * don't want <mbb> heavy-weighted. 
  */
 
-#include "common/mbb.h"
-#include "common/util.h"
 #include "common/InitializePasses.h"
 using namespace llvm;
+
+#include "common/mbb.h"
+#include "common/util.h"
+using namespace rcs;
 
 MicroBasicBlockBuilder::MicroBasicBlockBuilder(): ModulePass(ID) {
 	initializeMicroBasicBlockBuilderPass(*PassRegistry::getPassRegistry());

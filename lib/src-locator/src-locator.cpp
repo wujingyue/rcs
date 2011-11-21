@@ -8,11 +8,13 @@ using namespace std;
 #include "llvm/Pass.h"
 #include "llvm/Analysis/DebugInfo.h"
 #include "llvm/Support/CommandLine.h"
+#include "common/InitializePasses.h"
+using namespace llvm;
+
 #include "common/util.h"
 #include "common/IDAssigner.h"
 #include "common/src-locator.h"
-#include "common/InitializePasses.h"
-using namespace llvm;
+using namespace rcs;
 
 INITIALIZE_PASS_BEGIN(SourceLocator, "src-locator",
 		"From line number to instruction", false, true)

@@ -11,10 +11,12 @@
 #include "llvm/Pass.h"
 #include "llvm/Support/CFG.h"
 #include "llvm/ADT/DenseSet.h"
-#include "common/util.h"
 using namespace llvm;
 
-namespace llvm {
+#include "common/util.h"
+using namespace rcs;
+
+namespace rcs {
 	template <class Node>
 	struct Reach {
 		typedef DenseSet<const Node *> ConstNodeSet;

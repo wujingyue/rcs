@@ -8,8 +8,9 @@
 #include "llvm/BasicBlock.h"
 #include "llvm/Pass.h"
 #include "llvm/ADT/DenseMap.h"
+using namespace llvm;
 
-namespace llvm {
+namespace rcs {
 	/**
 	 * An MBB ends with a TerminatorInst or a CallInst. 
 	 * Note that an InvokeInst is a TerminatorInst. 

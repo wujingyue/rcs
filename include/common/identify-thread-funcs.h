@@ -3,10 +3,12 @@
 
 #include "llvm/Function.h"
 #include "llvm/Pass.h"
-#include "common/typedefs.h"
 using namespace llvm;
 
-namespace llvm {
+#include "common/typedefs.h"
+using namespace rcs;
+
+namespace rcs {
 	struct IdentifyThreadFuncs: public ModulePass {
 		static char ID;
 

@@ -4,15 +4,17 @@
 
 #define DEBUG_TYPE "assign-id"
 
+#include <fstream>
+using namespace std;
+
 #include "llvm/Support/CommandLine.h"
 #include "llvm/ADT/Statistic.h"
-#include "common/util.h"
-#include "common/IDAssigner.h"
 #include "common/InitializePasses.h"
 using namespace llvm;
 
-#include <fstream>
-using namespace std;
+#include "common/util.h"
+#include "common/IDAssigner.h"
+using namespace rcs;
 
 INITIALIZE_PASS(IDAssigner, "assign-id",
 		"Assign a unique ID to each instruction and each value", false, true)

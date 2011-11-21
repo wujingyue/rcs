@@ -10,7 +10,7 @@
 #include "llvm/ADT/DenseMap.h"
 using namespace llvm;
 
-namespace llvm {
+namespace rcs {
 	struct IDAssigner: public ModulePass {
 		static char ID;
 		static const unsigned INVALID_ID = -1;

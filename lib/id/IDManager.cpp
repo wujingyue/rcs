@@ -2,10 +2,12 @@
  * Author: Jingyue
  */
 
-#include "common/IDManager.h"
-#include "common/util.h"
 #include "common/InitializePasses.h"
 using namespace llvm;
+
+#include "common/IDManager.h"
+#include "common/util.h"
+using namespace rcs;
 
 INITIALIZE_PASS(IDManager, "manage-id",
 		"Find the instruction with a particular ID; Lookup the ID of an instruction",

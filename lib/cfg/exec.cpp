@@ -5,12 +5,14 @@
 #include "llvm/Support/CFG.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/SCCIterator.h"
+using namespace llvm;
+
 #include "common/exec.h"
 #include "common/callgraph-fp.h"
 #include "common/util.h"
 #include "common/reach.h"
 #include "common/InitializePasses.h"
-using namespace llvm;
+using namespace rcs;
 
 char Exec::ID = 0;
 

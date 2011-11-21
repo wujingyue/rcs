@@ -7,10 +7,12 @@
 #include "llvm/LLVMContext.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/DerivedTypes.h"
-#include "common/IDTagger.h"
-#include "common/util.h"
 #include "common/InitializePasses.h"
 using namespace llvm;
+
+#include "common/IDTagger.h"
+#include "common/util.h"
+using namespace rcs;
 
 INITIALIZE_PASS(IDTagger, "tag-id",
 		"Assign each instruction a unique ID", false, false)

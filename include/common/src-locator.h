@@ -14,8 +14,9 @@ using namespace std;
 #include "llvm/Pass.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/Instructions.h"
+using namespace llvm;
 
-namespace llvm {
+namespace rcs {
 	struct SourceLocator: public ModulePass {
 		static char ID;
 

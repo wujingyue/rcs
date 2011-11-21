@@ -8,10 +8,12 @@
 #define __INTRA_REACH_H
 
 #include "llvm/Pass.h"
-#include "common/typedefs.h"
 using namespace llvm;
 
-namespace llvm {
+#include "common/typedefs.h"
+using namespace rcs;
+
+namespace rcs {
 	/* TODO: Make it work with GraphTraits. Refer to DominatorTree */
 	struct IntraReach: public FunctionPass {
 		static char ID;

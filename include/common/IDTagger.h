@@ -8,7 +8,7 @@
 #include "llvm/Pass.h"
 using namespace llvm;
 
-namespace llvm {
+namespace rcs {
 	struct IDTagger: public ModulePass {
 		static char ID;
 

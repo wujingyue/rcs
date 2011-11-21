@@ -3,10 +3,10 @@
  */
 
 #include "llvm/Support/raw_ostream.h"
-#include "common/icfg.h"
 using namespace llvm;
 
-char ICFG::ID = 0;
+#include "common/icfg.h"
+using namespace rcs;
 
 ICFGNode *ICFG::getOrInsertMBB(const MicroBasicBlock *mbb) {
 	ICFGNode *&node = mbb_to_node[mbb];
