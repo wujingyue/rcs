@@ -12,6 +12,7 @@ struct RegisterIDPasses {
 		initializeIDAssignerPass(reg);
 		initializeIDManagerPass(reg);
 		initializeIDTaggerPass(reg);
+		initializeValueRenamingPass(reg);
 	}
 };
 static RegisterIDPasses X;

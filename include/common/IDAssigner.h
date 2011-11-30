@@ -19,8 +19,6 @@ namespace rcs {
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 		virtual bool runOnModule(Module& M);
 		virtual void print(raw_ostream &O, const Module *M) const;
-		void printInstructions(raw_ostream &O, const Module *M) const;
-		void printValues(raw_ostream &O, const Module *M) const;
 
 		unsigned getInstructionID(const Instruction *I) const;
 		unsigned getValueID(const Value *V) const;
@@ -28,16 +26,21 @@ namespace rcs {
 		Instruction *getInstruction(unsigned ID) const;
 		Value *getValue(unsigned ID) const;
 		Function *getFunction(unsigned ID) const;
+		/** Requires IDs to be consecutive. */
+		unsigned getNumValues() const { return ValueIDMapping.size(); }
 
 	private:
 		bool addValue(Value *V);
 		bool addIns(Instruction *I);
 		bool addFunction(Function *F);
 		void extractValuesInUser(User *U);
+
+		void printInstructions(raw_ostream &O, const Module *M) const;
+		void printValues(raw_ostream &O, const Module *M) const;
 		void printValue(raw_ostream &O, const Value *V) const;
 
 		DenseMap<const Instruction *, unsigned> InsIDMapping;
-		DenseMap<const Value *, unsigned > ValueIDMapping;
+		DenseMap<const Value *, unsigned> ValueIDMapping;
 		DenseMap<unsigned, Instruction *> IDInsMapping;
 		DenseMap<unsigned, Value *> IDValueMapping;
 		DenseMap<const Function *, unsigned> FunctionIDMapping;

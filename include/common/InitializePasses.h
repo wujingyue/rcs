@@ -19,6 +19,7 @@ namespace llvm {
 	void initializeIDAssignerPass(PassRegistry &);
 	void initializeIDManagerPass(PassRegistry &);
 	void initializeIDTaggerPass(PassRegistry &);
+	void initializeValueRenamingPass(PassRegistry &);
 	void initializeMicroBasicBlockBuilderPass(PassRegistry &);
 	void initializeSourceLocatorPass(PassRegistry &);
 }
