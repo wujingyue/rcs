@@ -48,12 +48,11 @@ void PartialICFGBuilder::dump_icfg(Module &M) {
 }
 
 bool PartialICFGBuilder::runOnModule(Module &M) {
-
 	// Find the main function. To be used later. 
 	Function *main = NULL;
-	forall(Module, fi, M) {
-		if (is_main(fi)) {
-			main = fi;
+	for (Module::iterator f = M.begin(); f != M.end(); ++f) {
+		if (is_main(f)) {
+			main = f;
 			break;
 		}
 	}
@@ -63,10 +62,10 @@ bool PartialICFGBuilder::runOnModule(Module &M) {
 	// Create a ICFG node for each of them. 
 	ExecOnce &EO = getAnalysis<ExecOnce>();
 	MicroBasicBlockBuilder &MBBB = getAnalysis<MicroBasicBlockBuilder>();
-	forallfunc(M, f) {
+	for (Module::iterator f = M.begin(); f != M.end(); ++f) {
 		if (f->isDeclaration() || EO.not_executed(f) || !EO.executed_once(f))
 			continue;
-		forall(Function, bb, *f) {
+		for (Function::iterator bb = f->begin(); bb != f->end(); ++bb) {
 			for (mbb_iterator mi = MBBB.begin(bb); mi != MBBB.end(bb); ++mi)
 				getOrInsertMBB(mi);
 		}
