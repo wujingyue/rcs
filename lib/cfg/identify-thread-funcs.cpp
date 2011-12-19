@@ -1,17 +1,14 @@
 #include "common/InitializePasses.h"
 using namespace llvm;
 
-#include "bc2bdd/BddAliasAnalysis.h"
-#include "bc2bdd/InitializePasses.h"
-using namespace bc2bdd;
-
+#include "common/callgraph-fp.h"
 #include "common/identify-thread-funcs.h"
 #include "common/util.h"
 using namespace rcs;
 
 INITIALIZE_PASS_BEGIN(IdentifyThreadFuncs, "identify-thread-funcs",
 		"Identify thread functions", false, true)
-INITIALIZE_PASS_DEPENDENCY(BddAliasAnalysis)
+INITIALIZE_PASS_DEPENDENCY(CallGraphFP)
 INITIALIZE_PASS_END(IdentifyThreadFuncs, "identify-thread-funcs",
 		"Identify thread functions", false, true)
 
@@ -19,7 +16,7 @@ char IdentifyThreadFuncs::ID = 0;
 
 void IdentifyThreadFuncs::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
-	AU.addRequired<BddAliasAnalysis>();
+	AU.addRequired<CallGraphFP>();
 }
 
 IdentifyThreadFuncs::IdentifyThreadFuncs(): ModulePass(ID) {
@@ -47,13 +44,11 @@ bool IdentifyThreadFuncs::runOnModule(Module &M) {
 					// pthread_create with a known function
 					thread_funcs.insert(cast<Function>(thr_func));
 				} else {
-					BddAliasAnalysis &BAA = getAnalysis<BddAliasAnalysis>();
-					// Ask BAA which defined functions <fp> may point to. 
-					set<const Value *> pointees;
-					BAA.pointsTo(thr_func, 0, &all_defined_funcs, pointees);
-					forall(set<const Value *>, it, pointees) {
-						thread_funcs.insert(
-								const_cast<Function *>(dyn_cast<Function>(*it)));
+					CallGraphFP &CG = getAnalysis<CallGraphFP>();
+					FuncList callees = CG.get_called_functions(ii);
+					for (size_t i = 0; i < callees.size(); ++i) {
+						if (callees[i]->getName() != "pthread_create")
+							thread_funcs.insert(callees[i]);
 					}
 				}
 			}

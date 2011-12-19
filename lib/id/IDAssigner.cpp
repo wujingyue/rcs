@@ -182,6 +182,7 @@ void IDAssigner::printInstructions(raw_ostream &O, const Module *M) const {
 			O << "\nFunction " << F->getName() << ":\n";
 		if (Ins == BB->begin())
 			O << "\nBB " << F->getName() << "." << BB->getName() << ":\n";
+		// Not sure why this line is so slow. 
 		O << i << ":" << *Ins << "\n";
 	}	
 	errs() << "Progress: " << All.size() << "/" << All.size() << "\n";

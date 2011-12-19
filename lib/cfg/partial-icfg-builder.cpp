@@ -8,9 +8,6 @@
 #include "bc2bdd/InitializePasses.h"
 using namespace llvm;
 
-#include "bc2bdd/BddAliasAnalysis.h"
-using namespace bc2bdd;
-
 #include "common/partial-icfg-builder.h"
 #include "common/exec-once.h"
 #include "common/callgraph-fp.h"
@@ -20,7 +17,6 @@ using namespace rcs;
 INITIALIZE_PASS_BEGIN(PartialICFGBuilder, "partial-icfg-builder",
 		"Builds part of the ICFG", false, true)
 INITIALIZE_PASS_DEPENDENCY(MicroBasicBlockBuilder)
-INITIALIZE_PASS_DEPENDENCY(BddAliasAnalysis)
 INITIALIZE_PASS_DEPENDENCY(CallGraphFP)
 INITIALIZE_PASS_DEPENDENCY(ExecOnce)
 INITIALIZE_PASS_END(PartialICFGBuilder, "partial-icfg-builder",
@@ -34,7 +30,6 @@ char PartialICFGBuilder::ID = 0;
 void PartialICFGBuilder::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequired<MicroBasicBlockBuilder>();
-	AU.addRequired<BddAliasAnalysis>();
 	AU.addRequired<CallGraphFP>();
 	AU.addRequired<ExecOnce>();
 }
