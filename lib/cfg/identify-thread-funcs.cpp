@@ -25,15 +25,6 @@ IdentifyThreadFuncs::IdentifyThreadFuncs(): ModulePass(ID) {
 
 bool IdentifyThreadFuncs::runOnModule(Module &M) {
 	/*
-	 * Get the set of all defined functions.
-	 * Will be used as a candidate set for point-to analysis. 
-	 */
-	set<const Function *> all_defined_funcs;
-	forallfunc(M, fi) {
-		if (!fi->isDeclaration())
-			all_defined_funcs.insert(fi);
-	}
-	/*
 	 * Extract the called thread functions for each pthread_create.
 	 */
 	thread_funcs.clear();

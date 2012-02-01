@@ -43,8 +43,9 @@ void IntraReach::floodfill_r(
 	if (sink.count(x))
 		return;
 	for (const_pred_iterator pi = pred_begin(x), E = pred_end(x);
-			pi != E; ++pi)
+			pi != E; ++pi) {
 		floodfill_r(*pi, sink, visited);
+	}
 }
 
 void IntraReach::floodfill(
@@ -55,6 +56,7 @@ void IntraReach::floodfill(
 	if (sink.count(x))
 		return;
 	for (succ_const_iterator si = succ_begin(x), E = succ_end(x);
-			si != E; ++si)
+			si != E; ++si) {
 		floodfill(*si, sink, visited);
+	}
 }

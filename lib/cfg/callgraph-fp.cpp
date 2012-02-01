@@ -1,9 +1,9 @@
-#include <set>
 #include <cstdio>
 #include <fstream>
 using namespace std;
 
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Analysis/AliasAnalysis.h"
 using namespace llvm;
 
 #include "bc2bdd/BddAliasAnalysis.h"
@@ -18,6 +18,7 @@ using namespace rcs;
 INITIALIZE_PASS_BEGIN(CallGraphFP, "callgraph-fp",
 		"Call graph that recognizes function pointers", false, true)
 INITIALIZE_PASS_DEPENDENCY(BddAliasAnalysis)
+INITIALIZE_AG_DEPENDENCY(AliasAnalysis)
 INITIALIZE_PASS_END(CallGraphFP, "callgraph-fp",
 		"Call graph that recognizes function pointers", false, true)
 
@@ -29,6 +30,7 @@ char CallGraphFP::ID = 0;
 
 void CallGraphFP::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
+	AU.addRequired<AliasAnalysis>();
 	AU.addRequired<BddAliasAnalysis>();
 }
 
@@ -78,8 +80,8 @@ InstList CallGraphFP::get_call_sites(
 }
 
 void CallGraphFP::process_call_site(const CallSite &cs,
-		set<const Function *> &all_funcs) {
-	BddAliasAnalysis &BAA = getAnalysis<BddAliasAnalysis>();
+		const FuncSet &all_funcs) {
+	AliasAnalysis &AA = getAnalysis<BddAliasAnalysis>();
 
 	if (Function *callee = cs.getCalledFunction()) {
 		add_call_edge(cs, callee);
@@ -91,35 +93,23 @@ void CallGraphFP::process_call_site(const CallSite &cs,
 				// pthread_create with a known function
 				add_call_edge(cs, thr_func);
 			} else {
-				// Ask BAA which functions <fp> may point to. 
-				set<const Value *> pointees;
-				BAA.pointsTo(target, 0, &all_funcs, pointees);
-#if 0
-				if (pointees.size() == 0) {
-					errs() << "[Warning] the function pointer below points to "
-						"nothing\n" << *target << "\n";
-				}
-#endif
-				forall(set<const Value *>, it, pointees) {
-					add_call_edge(
-							cs, const_cast<Function *>(dyn_cast<Function>(*it)));
+				// Ask AA which functions <target> may point to. 
+				for (FuncSet::const_iterator it = all_funcs.begin();
+						it != all_funcs.end(); ++it) {
+					if (AA.alias(target, *it))
+						add_call_edge(cs, *it);
 				}
 			}
 		}
 	} else {
 		Value *fp = cs.getCalledValue();
 		assert(fp && "Cannot find the function pointer");
-		// Ask BAA which functions <fp> may point to. 
-		set<const Value *> pointees;
-		BAA.pointsTo(fp, 0, &all_funcs, pointees);
-#if 0
-		if (pointees.size() == 0) {
-			errs() << "[Warning] the function pointer below points to "
-				"nothing\n" << *fp << "\n";
+		// Ask AA which functions <fp> may point to. 
+		for (FuncSet::const_iterator it = all_funcs.begin();
+				it != all_funcs.end(); ++it) {
+			if (AA.alias(fp, *it))
+				add_call_edge(cs, *it);
 		}
-#endif
-		forall(set<const Value *>, it, pointees)
-			add_call_edge(cs, const_cast<Function *>(dyn_cast<Function>(*it)));
 	}
 }
 
@@ -142,8 +132,8 @@ bool CallGraphFP::runOnModule(Module &M) {
 	 * FIXME: Currently we have to skip external functions, otherwise
 	 * bc2bdd would fail. Don't ask me why. 
 	 */
-	set<const Function *> all_funcs;
-	forallfunc(M, f) {
+	FuncSet all_funcs;
+	for (Module::iterator f = M.begin(); f != M.end(); ++f) {
 		if (!f->isDeclaration())
 			all_funcs.insert(f);
 	}

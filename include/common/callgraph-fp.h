@@ -9,7 +9,6 @@
 #define __CALLGRAPH_FP_H
 
 #include <vector>
-#include <set>
 using namespace std;
 
 #include "llvm/Module.h"
@@ -68,7 +67,7 @@ namespace rcs {
 		template <class T> void make_unique(vector<T> &v);
 
 	private:
-		void process_call_site(const CallSite &cs, set<const Function *> &all_funcs);
+		void process_call_site(const CallSite &cs, const FuncSet &all_funcs);
 		void simplify_call_graph();
 		void add_extra_call_edges(Module &M);
 
