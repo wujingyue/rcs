@@ -1,9 +1,18 @@
+/**
+ * Author: Jingyue
+ *
+ * A call-graph builder considering function pointers. 
+ * The targets of function pointers are identified by alias analysis. 
+ * Users may specify which alias analysis she wants to run this pass with. 
+ */
+
 #include <cstdio>
 #include <fstream>
 using namespace std;
 
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Analysis/AliasAnalysis.h"
+#include "common/InitializePasses.h"
 using namespace llvm;
 
 #include "bc2bdd/BddAliasAnalysis.h"
@@ -12,7 +21,6 @@ using namespace bc2bdd;
 
 #include "common/callgraph-fp.h"
 #include "common/util.h"
-#include "common/InitializePasses.h"
 using namespace rcs;
 
 INITIALIZE_PASS_BEGIN(CallGraphFP, "callgraph-fp",

@@ -22,6 +22,7 @@ namespace llvm {
 	void initializeValueRenamingPass(PassRegistry &);
 	void initializeMicroBasicBlockBuilderPass(PassRegistry &);
 	void initializeSourceLocatorPass(PassRegistry &);
+	void initializeFPInstrumenterPass(PassRegistry &);
 }
 
 #endif
