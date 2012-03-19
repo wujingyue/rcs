@@ -9,9 +9,13 @@ using namespace std;
 #include "llvm/Pass.h"
 #include "llvm/Constants.h"
 #include "llvm/Instructions.h"
+#include "llvm/Support/CallSite.h"
 #include "llvm/Support/raw_ostream.h"
 #include "common/InitializePasses.h"
 using namespace llvm;
+
+#include "common/IDManager.h"
+using namespace rcs;
 
 namespace rcs {
 	struct FPInstrumenter: public ModulePass {
@@ -21,15 +25,22 @@ namespace rcs {
 
 		FPInstrumenter();
 		bool runOnModule(Module &M);
+		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 
 	private:
 		Function *trace_source, *trace_dest, *trace_init;
 	};
 }
-using namespace rcs;
 
-INITIALIZE_PASS(FPInstrumenter, "instrument-fp",
+INITIALIZE_PASS_BEGIN(FPInstrumenter, "instrument-fp",
 		"Instrument function pointers", false, false)
+INITIALIZE_PASS_DEPENDENCY(IDManager)
+INITIALIZE_PASS_END(FPInstrumenter, "instrument-fp",
+		"Instrument function pointers", false, false)
+
+void FPInstrumenter::getAnalysisUsage(AnalysisUsage &AU) const {
+	AU.addRequired<IDManager>();
+}
 
 char FPInstrumenter::ID = 0;
 
@@ -43,31 +54,55 @@ FPInstrumenter::FPInstrumenter(): ModulePass(ID) {
 }
 
 bool FPInstrumenter::runOnModule(Module &M) {
+	IDManager &IDM = getAnalysis<IDManager>();
+
 	Function *main = M.getFunction("main");
 	assert(main && "Cannot find the main function");
-	assert(!M.getFunction(TRACE_INIT));
-	assert(!M.getFunction(TRACE_SOURCE));
-	assert(!M.getFunction(TRACE_DEST));
+	assert(!M.getFunction(TRACE_INIT) && "trace_init already exists");
+	assert(!M.getFunction(TRACE_SOURCE) && "trace_source already exists");
+	assert(!M.getFunction(TRACE_DEST) && "trace_dest already exists");
 	
 	const Type *char_ty = IntegerType::get(M.getContext(), 8);
 	const Type *int_ty = IntegerType::get(M.getContext(), 32);
 	const Type *string_ty = PointerType::getUnqual(char_ty);
+	// trace_init()
 	const FunctionType *trace_init_fty = FunctionType::get(
 			Type::getVoidTy(M.getContext()),
 			false);
+	// trace_source(int)
+	const FunctionType *trace_source_fty = FunctionType::get(
+			Type::getVoidTy(M.getContext()),
+			vector<const Type *>(1, int_ty),
+			false);
+	// trace_dest(char *)
 	const FunctionType *trace_dest_fty = FunctionType::get(
 			Type::getVoidTy(M.getContext()),
 			vector<const Type *>(1, string_ty),
 			false);
 
-	trace_init = dyn_cast<Function>(
-			M.getOrInsertFunction(TRACE_INIT, trace_init_fty));
-	assert(trace_init);
-	trace_dest = dyn_cast<Function>(
-			M.getOrInsertFunction(TRACE_DEST, trace_dest_fty));
-	assert(trace_dest);
+	trace_init = Function::Create(trace_init_fty,
+			GlobalValue::ExternalLinkage, TRACE_INIT, &M);
+	trace_source = Function::Create(trace_source_fty,
+			GlobalValue::ExternalLinkage, TRACE_SOURCE, &M);
+	trace_dest = Function::Create(trace_dest_fty,
+			GlobalValue::ExternalLinkage, TRACE_DEST, &M);
 
-	CallInst::Create(trace_init, "", main->begin()->getFirstNonPHI());
+	// Insert trace_source at each call via a function pointer.
+	for (Module::iterator f = M.begin(); f != M.end(); ++f) {
+		for (Function::iterator bb = f->begin(); bb != f->end(); ++bb) {
+			for (BasicBlock::iterator ins = bb->begin(); ins != bb->end(); ++ins) {
+				CallSite cs(ins);
+				if (cs.getInstruction() && cs.getCalledFunction() == NULL) {
+					unsigned ins_id = IDM.getInstructionID(ins);
+					assert(ins_id != IDManager::INVALID_ID);
+					Value *arg = ConstantInt::get(int_ty, ins_id);
+					CallInst::Create(trace_source, arg, "", ins);
+				}
+			}
+		}
+	}
+
+	// Insert trace_dest at each function entry. 
 	for (Module::iterator f = M.begin(); f != M.end(); ++f) {
 		if (f->isDeclaration())
 			continue;
@@ -97,6 +132,10 @@ bool FPInstrumenter::runOnModule(Module &M) {
 				indices.begin(), indices.end(), "", insert_pos);
 		CallInst::Create(trace_dest, arg, "", insert_pos);
 	}
+
+	// Insert trace_init at the program entry. 
+	// Do this after inserting trace_dest. 
+	CallInst::Create(trace_init, "", main->begin()->getFirstNonPHI());
 
 	return true;
 }
