@@ -5,8 +5,8 @@
  * (e.g. SCC) on it. 
  */
 
-#ifndef __CALLGRAPH_FP_H
-#define __CALLGRAPH_FP_H
+#ifndef __RCS_CALLGRAPH_FP_H
+#define __RCS_CALLGRAPH_FP_H
 
 #include <vector>
 using namespace std;
@@ -69,7 +69,6 @@ namespace rcs {
 	private:
 		void process_call_site(const CallSite &cs, const FuncSet &all_funcs);
 		void simplify_call_graph();
-		void add_extra_call_edges(Module &M);
 
 		SiteFuncMapping called_funcs;
 		FuncSiteMapping call_sites;

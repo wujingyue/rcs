@@ -13,26 +13,24 @@ using namespace std;
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "common/InitializePasses.h"
+#include "bc2bdd/InitializePasses.h"
 using namespace llvm;
 
 #include "bc2bdd/BddAliasAnalysis.h"
-#include "bc2bdd/InitializePasses.h"
 using namespace bc2bdd;
 
 #include "common/callgraph-fp.h"
+#include "common/fp-collector.h"
 #include "common/util.h"
 using namespace rcs;
 
 INITIALIZE_PASS_BEGIN(CallGraphFP, "callgraph-fp",
 		"Call graph that recognizes function pointers", false, true)
 INITIALIZE_PASS_DEPENDENCY(BddAliasAnalysis)
+INITIALIZE_PASS_DEPENDENCY(FPCollector)
 INITIALIZE_AG_DEPENDENCY(AliasAnalysis)
 INITIALIZE_PASS_END(CallGraphFP, "callgraph-fp",
 		"Call graph that recognizes function pointers", false, true)
-
-static cl::opt<string> ExtraCallEdgesFile("extra-call-edges",
-		cl::desc("The file which contains the extra call edges that need be added "
-		"to the call graph"));
 
 char CallGraphFP::ID = 0;
 
@@ -40,6 +38,7 @@ void CallGraphFP::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequired<AliasAnalysis>();
 	AU.addRequired<BddAliasAnalysis>();
+	AU.addRequired<FPCollector>();
 }
 
 CallGraphFP::CallGraphFP():
@@ -58,6 +57,7 @@ void CallGraphFP::destroy() {
 
 void CallGraphFP::add_call_edge(const CallSite &site, Function *callee) {
 	Instruction *ins = site.getInstruction();
+	assert(ins);
 	called_funcs[ins].push_back(callee);
 	call_sites[callee].push_back(ins);
 	// Update CallGraph as well. 
@@ -148,10 +148,10 @@ bool CallGraphFP::runOnModule(Module &M) {
 
 	/* Get root (main function) */
 	unsigned n_mains = 0;
-	forallfunc(M, fi) {
-		if (!fi->hasLocalLinkage() && fi->getNameStr() == "main") {
+	for (Module::iterator f = M.begin(); f != M.end(); ++f) {
+		if (!f->hasLocalLinkage() && f->getNameStr() == "main") {
 			n_mains++;
-			root = getOrInsertFunction(fi);
+			root = getOrInsertFunction(f);
 		}
 	}
 	// No root if no main function or more than one main functions. 
@@ -162,18 +162,18 @@ bool CallGraphFP::runOnModule(Module &M) {
 	if (root != extern_calling_node) {
 		extern_calling_node->addCalledFunction(CallSite(), root);
 	} else {
-		forallfunc(M, fi) {
-			if (!fi->hasLocalLinkage()) {
+		for (Module::iterator f = M.begin(); f != M.end(); ++f) {
+			if (!f->hasLocalLinkage()) {
 				extern_calling_node->addCalledFunction(
-						CallSite(), getOrInsertFunction(fi));
+						CallSite(), getOrInsertFunction(f));
 			}
 		}
 	}
 	
 	// Connect <calls_extern_node>.
-	forallfunc(M, fi) {
-		if (fi->isDeclaration()) {
-			getOrInsertFunction(fi)->addCalledFunction(
+	for (Module::iterator f = M.begin(); f != M.end(); ++f) {
+		if (f->isDeclaration()) {
+			getOrInsertFunction(f)->addCalledFunction(
 					CallSite(), calls_extern_node);
 		}
 	}
@@ -181,50 +181,27 @@ bool CallGraphFP::runOnModule(Module &M) {
 	// Build the call graph. 
 	called_funcs.clear();
 	call_sites.clear();
-	forallinst(M, ins) {
-		CallSite cs(ins);
-		if (cs.getInstruction())
-			process_call_site(cs, all_funcs);
+	for (Module::iterator f = M.begin(); f != M.end(); ++f) {
+		for (Function::iterator bb = f->begin(); bb != f->end(); ++bb) {
+			for (BasicBlock::iterator ins = bb->begin(); ins != bb->end(); ++ins) {
+				CallSite cs(ins);
+				if (cs.getInstruction())
+					process_call_site(cs, all_funcs);
+			}
+		}
 	}
 
-	add_extra_call_edges(M);
+	// Add extra call edges via function pointers. 
+	FPCollector &FPC = getAnalysis<FPCollector>();
+	for (unsigned i = 0; i < FPC.get_num_call_edges(); ++i) {
+		pair<Instruction *, Function *> edge = FPC.get_call_edge(i);
+		add_call_edge(CallSite(edge.first), edge.second);
+	}
 
 	// Simplify the call graph. 
 	simplify_call_graph();
 
 	return false;
-}
-
-void CallGraphFP::add_extra_call_edges(Module &M) {
-	if (ExtraCallEdgesFile == "")
-		return;
-
-	ifstream fin(ExtraCallEdgesFile.c_str());
-	assert(fin && "Cannot open the extra call edges file");
-	string caller_name, callee_name;
-	while (fin >> caller_name >> callee_name) {
-		Function *caller = M.getFunction(caller_name);
-		Function *callee = M.getFunction(callee_name);
-		if (!caller || !callee) {
-			errs() << "[Warning] Failed to add call edge " << caller_name <<
-				" => " << callee_name << "\n";
-			continue;
-		}
-		forall(Function, bb, *caller) {
-			forall(BasicBlock, ins, *bb) {
-				CallSite cs(ins);
-				if (cs.getInstruction() && !cs.getCalledFunction()) {
-					Value *fp = cs.getCalledValue();
-					assert(fp);
-					if (fp->getType() == callee->getType())
-						add_call_edge(cs, callee);
-					else if (caller_name == "apr_table_do" &&
-							callee_name == "form_header_field")
-						add_call_edge(cs, callee);
-				}
-			}
-		}
-	}
 }
 
 void CallGraphFP::simplify_call_graph() {
