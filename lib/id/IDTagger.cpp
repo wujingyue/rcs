@@ -6,6 +6,7 @@
 
 #include "llvm/LLVMContext.h"
 #include "llvm/ADT/Statistic.h"
+#include "llvm/Constants.h"
 #include "llvm/DerivedTypes.h"
 #include "common/InitializePasses.h"
 using namespace llvm;
@@ -30,12 +31,12 @@ void IDTagger::getAnalysisUsage(AnalysisUsage &AU) const {
 }
 
 bool IDTagger::runOnModule(Module &M) {
-	const IntegerType *IntType = IntegerType::get(M.getContext(), 32);
+	IntegerType *IntType = IntegerType::get(M.getContext(), 32);
 	for (Module::iterator F = M.begin(); F != M.end(); ++F) {
 		for (Function::iterator BB = F->begin(); BB != F->end(); ++BB) {
 			for (BasicBlock::iterator I = BB->begin(); I != BB->end(); ++I) {
-				Value *const InsID = ConstantInt::get(IntType, NumInstructions);
-				I->setMetadata("ins_id", MDNode::get(M.getContext(), &InsID, 1));
+				Constant *InsID = ConstantInt::get(IntType, NumInstructions);
+				I->setMetadata("ins_id", MDNode::get(M.getContext(), InsID));
 				++NumInstructions;
 			}
 		}

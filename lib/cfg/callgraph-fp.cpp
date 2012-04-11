@@ -16,9 +16,6 @@ using namespace std;
 #include "bc2bdd/InitializePasses.h"
 using namespace llvm;
 
-#include "bc2bdd/BddAliasAnalysis.h"
-using namespace bc2bdd;
-
 #include "common/callgraph-fp.h"
 #include "common/fp-collector.h"
 #include "common/util.h"
@@ -26,7 +23,6 @@ using namespace rcs;
 
 INITIALIZE_PASS_BEGIN(CallGraphFP, "callgraph-fp",
 		"Call graph that recognizes function pointers", false, true)
-INITIALIZE_PASS_DEPENDENCY(BddAliasAnalysis)
 INITIALIZE_PASS_DEPENDENCY(FPCollector)
 INITIALIZE_AG_DEPENDENCY(AliasAnalysis)
 INITIALIZE_PASS_END(CallGraphFP, "callgraph-fp",
@@ -37,7 +33,6 @@ char CallGraphFP::ID = 0;
 void CallGraphFP::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequired<AliasAnalysis>();
-	AU.addRequired<BddAliasAnalysis>();
 	AU.addRequired<FPCollector>();
 }
 
@@ -89,7 +84,7 @@ InstList CallGraphFP::get_call_sites(
 
 void CallGraphFP::process_call_site(const CallSite &cs,
 		const FuncSet &all_funcs) {
-	AliasAnalysis &AA = getAnalysis<BddAliasAnalysis>();
+	AliasAnalysis &AA = getAnalysis<AliasAnalysis>();
 
 	if (Function *callee = cs.getCalledFunction()) {
 		add_call_edge(cs, callee);

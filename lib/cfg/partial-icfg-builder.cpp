@@ -5,7 +5,6 @@
 #include "llvm/Support/CFG.h"
 #include "llvm/Support/CommandLine.h"
 #include "common/InitializePasses.h"
-#include "bc2bdd/InitializePasses.h"
 using namespace llvm;
 
 #include "common/partial-icfg-builder.h"

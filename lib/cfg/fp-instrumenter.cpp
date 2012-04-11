@@ -62,22 +62,22 @@ bool FPInstrumenter::runOnModule(Module &M) {
 	assert(!M.getFunction(TRACE_SOURCE) && "trace_source already exists");
 	assert(!M.getFunction(TRACE_DEST) && "trace_dest already exists");
 	
-	const Type *char_ty = IntegerType::get(M.getContext(), 8);
-	const Type *int_ty = IntegerType::get(M.getContext(), 32);
-	const Type *string_ty = PointerType::getUnqual(char_ty);
+	Type *char_ty = IntegerType::get(M.getContext(), 8);
+	Type *int_ty = IntegerType::get(M.getContext(), 32);
+	Type *string_ty = PointerType::getUnqual(char_ty);
 	// trace_init()
-	const FunctionType *trace_init_fty = FunctionType::get(
+	FunctionType *trace_init_fty = FunctionType::get(
 			Type::getVoidTy(M.getContext()),
 			false);
 	// trace_source(int)
-	const FunctionType *trace_source_fty = FunctionType::get(
+	FunctionType *trace_source_fty = FunctionType::get(
 			Type::getVoidTy(M.getContext()),
-			vector<const Type *>(1, int_ty),
+			vector<Type *>(1, int_ty),
 			false);
 	// trace_dest(char *)
-	const FunctionType *trace_dest_fty = FunctionType::get(
+	FunctionType *trace_dest_fty = FunctionType::get(
 			Type::getVoidTy(M.getContext()),
-			vector<const Type *>(1, string_ty),
+			vector<Type *>(1, string_ty),
 			false);
 
 	trace_init = Function::Create(trace_init_fty,
@@ -128,8 +128,7 @@ bool FPInstrumenter::runOnModule(Module &M) {
 		// Insert a trace_dest function call at the function entry. 
 		vector<Value *> indices(2, ConstantInt::get(int_ty, 0));
 		Instruction *insert_pos = f->begin()->getFirstNonPHI();
-		Value *arg = GetElementPtrInst::CreateInBounds(gv,
-				indices.begin(), indices.end(), "", insert_pos);
+		Value *arg = GetElementPtrInst::CreateInBounds(gv, indices, "", insert_pos);
 		CallInst::Create(trace_dest, arg, "", insert_pos);
 	}
 

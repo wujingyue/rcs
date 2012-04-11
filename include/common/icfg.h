@@ -10,7 +10,7 @@
 #include <vector>
 using namespace std;
 
-#include "llvm/Pass.h"
+#include "llvm/ADT/GraphTraits.h"
 using namespace llvm;
 
 #include "common/mbb.h"
