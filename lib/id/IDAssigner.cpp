@@ -102,6 +102,11 @@ bool IDAssigner::runOnModule(Module &M) {
 			extractValuesInUser(G->getInitializer());
 	}
 
+  // Functions should be treated as values as well. They might be used by
+  // instructions as function pointers. 
+  for (Module::iterator F = M.begin(); F != M.end(); ++F)
+    addValue(F);
+  
 	// Function parameters
 	for (Module::iterator F = M.begin(); F != M.end(); ++F) {
 		for (Function::arg_iterator AI = F->arg_begin();
