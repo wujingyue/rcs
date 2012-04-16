@@ -1,6 +1,6 @@
 LEVEL = ..
 
-DIRS = id cfg src-locator
+DIRS = id cfg src-locator PointerAnalysis
 
 OPTIONAL_DIRS = misc
 
