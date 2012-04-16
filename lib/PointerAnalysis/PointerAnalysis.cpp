@@ -10,3 +10,10 @@
 //
 // PointerAnalysis is a AnalysisGroup. The default instance of this group
 // is BasicPointerAnalysis. 
+
+#include "common/PointerAnalysis.h"
+using namespace rcs;
+
+char PointerAnalysis::ID = 0;
+
+static RegisterAnalysisGroup<PointerAnalysis> A("Pointer Analysis");
