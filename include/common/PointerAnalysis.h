@@ -4,10 +4,8 @@
 #define __RCS_POINTER_ANALYSIS_H
 
 #include "llvm/Value.h"
-using namespace llvm;
 
 #include "common/typedefs.h"
-using namespace rcs;
 
 namespace rcs {
 struct PointerAnalysis {
@@ -17,7 +15,8 @@ struct PointerAnalysis {
   PointerAnalysis() {}
   // We want to be subclassed. 
   virtual ~PointerAnalysis() {}
-  virtual void getPointees(const Value *Pointer, ValueSet &Pointees) = 0;
+  virtual void getPointees(const llvm::Value *Pointer,
+                           rcs::ValueList &Pointees) const = 0;
 };
 }
 
