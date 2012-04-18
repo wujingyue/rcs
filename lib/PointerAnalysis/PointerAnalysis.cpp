@@ -35,4 +35,3 @@ struct RegisterPointerAnalysisPasses {
   }
 };
 static RegisterPointerAnalysisPasses X;
-
