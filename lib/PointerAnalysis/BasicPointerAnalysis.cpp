@@ -2,12 +2,15 @@
 
 // The default implementation of PointerAnalysis. 
 
+#include <cstdio>
 #include <list>
 #include <string>
 using namespace std;
 
 #include "llvm/Pass.h"
 #include "llvm/Analysis/AliasAnalysis.h"
+#include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/Debug.h"
 #include "common/InitializePasses.h"
 using namespace llvm;
 
@@ -22,7 +25,11 @@ struct BasicPointerAnalysis: public ModulePass, public PointerAnalysis {
   BasicPointerAnalysis();
   virtual void getAnalysisUsage(AnalysisUsage &AU) const;
   virtual bool runOnModule(Module &M);
-  virtual void getPointees(const Value *Pointer, ValueList &Pointees) const;
+  virtual void getPointees(const Value *Pointer, ValueList &Pointees);
+  virtual void print(raw_ostream &O, const Module *M) const;
+  // A very important function. Otherwise getAnalysis<PointerAnalysis> would
+  // not be able to return BasicPointerAnalysis. 
+  virtual void *getAdjustedAnalysisPointer(AnalysisID PI);
   
  private:
   bool isMallocCall(Value *V) const;
@@ -63,6 +70,7 @@ void BasicPointerAnalysis::getAnalysisUsage(AnalysisUsage &AU) const {
 }
 
 BasicPointerAnalysis::BasicPointerAnalysis(): ModulePass(ID) {
+  initializeBasicPointerAnalysisPass(*PassRegistry::getPassRegistry());
   // Initialize the list of memory allocatores.
   MallocNames.push_back("malloc");
   MallocNames.push_back("calloc");
@@ -90,7 +98,7 @@ bool BasicPointerAnalysis::runOnModule(Module &M) {
       if (AA.alias(TheLeader, 0, V, 0) != AliasAnalysis::NoAlias) {
         Leader[V] = TheLeader;
         if (isa<GlobalValue>(V) || isa<AllocaInst>(V) || isMallocCall(V))
-         Allocators[TheLeader].push_back(V); 
+          Allocators[TheLeader].push_back(V); 
         list<Value *>::iterator ToDelete = I;
         ++I;
         RemainingValues.erase(ToDelete);
@@ -99,12 +107,13 @@ bool BasicPointerAnalysis::runOnModule(Module &M) {
       }
     }
   }
+  dbgs() << "# of equivalence classes = " << Allocators.size() << "\n";
   
   return false;
 }
 
 void BasicPointerAnalysis::getPointees(const Value *Pointer,
-                                       ValueList &Pointees) const {
+                                       ValueList &Pointees) {
   assert(Leader.count(Pointer) && "<Pointer> is not a captured value");
   const Value *TheLeader = Leader.lookup(Pointer);
 
@@ -133,4 +142,13 @@ bool BasicPointerAnalysis::isMalloc(Function *F) const {
                                             MallocNames.end(),
                                             F->getName());
   return Pos != MallocNames.end();
+}
+
+void BasicPointerAnalysis::print(raw_ostream &O, const Module *M) const {
+}
+
+void *BasicPointerAnalysis::getAdjustedAnalysisPointer(AnalysisID PI) {
+  if (PI == &PointerAnalysis::ID)
+    return (PointerAnalysis *)this;
+  return this;
 }

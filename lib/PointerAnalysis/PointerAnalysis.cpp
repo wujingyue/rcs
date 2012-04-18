@@ -11,6 +11,7 @@
 // PointerAnalysis is a AnalysisGroup. The default instance of this group
 // is BasicPointerAnalysis. 
 
+#include "llvm/Support/raw_ostream.h"
 #include "common/InitializePasses.h"
 using namespace llvm;
 
