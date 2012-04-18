@@ -8,6 +8,7 @@ using namespace std;
 
 #include "llvm/Pass.h"
 #include "llvm/Analysis/AliasAnalysis.h"
+#include "common/InitializePasses.h"
 using namespace llvm;
 
 #include "common/IDAssigner.h"
@@ -39,20 +40,24 @@ struct BasicPointerAnalysis: public ModulePass, public PointerAnalysis {
 
 char BasicPointerAnalysis::ID = 0;
 
+#if 0
+static RegisterAnalysisGroup<PointerAnalysis, true> Y(X);
+#endif
+
+INITIALIZE_AG_PASS_BEGIN(BasicPointerAnalysis, PointerAnalysis, "basicpa",
+                         "Basic Pointer Analysis", false, true, true)
+INITIALIZE_PASS_DEPENDENCY(IDAssigner)
+INITIALIZE_AG_DEPENDENCY(AliasAnalysis)
+INITIALIZE_AG_PASS_END(BasicPointerAnalysis, PointerAnalysis, "basicpa",
+                       "Basic Pointer Analysis", false, true, true)
+#if 0
 static RegisterPass<BasicPointerAnalysis> X("basicpa",
                                             "Basic Pointer Analysis",
                                             false, // Is CFG Only? 
                                             true); // Is Analysis? 
-static RegisterAnalysisGroup<PointerAnalysis> Y(X);
-#if 0
-INITIALIZE_AG_PASS(BasicPointerAnalysis, PointerAnalysis, "basicpa",
-                   "Basic Pointer Analysis",
-                   false, // Is CFG Only? 
-                   true, // Is Analysis? 
-                   true); // Is default Analysis Group implementation? 
 #endif
-
 void BasicPointerAnalysis::getAnalysisUsage(AnalysisUsage &AU) const {
+  AU.setPreservesAll();
   AU.addRequired<IDAssigner>();
   AU.addRequired<AliasAnalysis>();
 }

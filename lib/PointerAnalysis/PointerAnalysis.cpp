@@ -11,9 +11,26 @@
 // PointerAnalysis is a AnalysisGroup. The default instance of this group
 // is BasicPointerAnalysis. 
 
+#include "common/InitializePasses.h"
+using namespace llvm;
+
 #include "common/PointerAnalysis.h"
 using namespace rcs;
 
 char PointerAnalysis::ID = 0;
 
+INITIALIZE_ANALYSIS_GROUP(PointerAnalysis,
+                          "Pointer Analysis",
+                          BasicPointerAnalysis)
+#if 0
 static RegisterAnalysisGroup<PointerAnalysis> A("Pointer Analysis");
+#endif
+
+struct RegisterPointerAnalysisPasses {
+  RegisterPointerAnalysisPasses() {
+    PassRegistry &Reg = *PassRegistry::getPassRegistry();
+    initializePointerAnalysisAnalysisGroup(Reg);
+    initializeBasicPointerAnalysisPass(Reg);
+  }
+};
+static RegisterPointerAnalysisPasses X;
