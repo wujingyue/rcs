@@ -16,7 +16,10 @@ struct PointerAnalysis {
 
   // We want to be subclassed. 
   virtual ~PointerAnalysis() {}
-  virtual void getPointees(const llvm::Value *Pointer,
+  // Returns true if we have point-to information for <Pointer>. 
+  // Due to some limitations of underlying alias analyses, it is not always
+  // possible to capture all pointers. 
+  virtual bool getPointees(const llvm::Value *Pointer,
                            rcs::ValueList &Pointees) = 0;
  protected:
   PointerAnalysis() {}

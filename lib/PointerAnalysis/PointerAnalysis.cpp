@@ -20,13 +20,17 @@ using namespace rcs;
 
 char PointerAnalysis::ID = 0;
 
+#if 0
 INITIALIZE_ANALYSIS_GROUP(PointerAnalysis,
                           "Pointer Analysis",
                           BasicPointerAnalysis)
-#if 0
+#endif
+
+#if 1
 static RegisterAnalysisGroup<PointerAnalysis> A("Pointer Analysis");
 #endif
 
+#if 0
 struct RegisterPointerAnalysisPasses {
   RegisterPointerAnalysisPasses() {
     PassRegistry &Reg = *PassRegistry::getPassRegistry();
@@ -35,3 +39,4 @@ struct RegisterPointerAnalysisPasses {
   }
 };
 static RegisterPointerAnalysisPasses X;
+#endif

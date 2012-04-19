@@ -25,7 +25,7 @@ struct BasicPointerAnalysis: public ModulePass, public PointerAnalysis {
   BasicPointerAnalysis();
   virtual void getAnalysisUsage(AnalysisUsage &AU) const;
   virtual bool runOnModule(Module &M);
-  virtual void getPointees(const Value *Pointer, ValueList &Pointees);
+  virtual bool getPointees(const Value *Pointer, ValueList &Pointees);
   virtual void print(raw_ostream &O, const Module *M) const;
   // A very important function. Otherwise getAnalysis<PointerAnalysis> would
   // not be able to return BasicPointerAnalysis. 
@@ -34,6 +34,7 @@ struct BasicPointerAnalysis: public ModulePass, public PointerAnalysis {
  private:
   bool isMallocCall(Value *V) const;
   bool isMalloc(Function *F) const;
+  bool shouldFilterOut(Value *V) const;
 
   vector<string> MallocNames;
   // Leader[V] is the leader of the equivalence class <V> belongs to. 
@@ -48,21 +49,25 @@ struct BasicPointerAnalysis: public ModulePass, public PointerAnalysis {
 char BasicPointerAnalysis::ID = 0;
 
 #if 0
-static RegisterAnalysisGroup<PointerAnalysis, true> Y(X);
-#endif
-
 INITIALIZE_AG_PASS_BEGIN(BasicPointerAnalysis, PointerAnalysis, "basicpa",
                          "Basic Pointer Analysis", false, true, true)
 INITIALIZE_PASS_DEPENDENCY(IDAssigner)
 INITIALIZE_AG_DEPENDENCY(AliasAnalysis)
 INITIALIZE_AG_PASS_END(BasicPointerAnalysis, PointerAnalysis, "basicpa",
                        "Basic Pointer Analysis", false, true, true)
-#if 0
+#endif
+
+#if 1
 static RegisterPass<BasicPointerAnalysis> X("basicpa",
                                             "Basic Pointer Analysis",
                                             false, // Is CFG Only? 
                                             true); // Is Analysis? 
 #endif
+
+#if 1
+static RegisterAnalysisGroup<PointerAnalysis, true> Y(X);
+#endif
+
 void BasicPointerAnalysis::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.setPreservesAll();
   AU.addRequired<IDAssigner>();
@@ -70,7 +75,9 @@ void BasicPointerAnalysis::getAnalysisUsage(AnalysisUsage &AU) const {
 }
 
 BasicPointerAnalysis::BasicPointerAnalysis(): ModulePass(ID) {
+#if 0
   initializeBasicPointerAnalysisPass(*PassRegistry::getPassRegistry());
+#endif
   // Initialize the list of memory allocatores.
   MallocNames.push_back("malloc");
   MallocNames.push_back("calloc");
@@ -82,26 +89,45 @@ BasicPointerAnalysis::BasicPointerAnalysis(): ModulePass(ID) {
   MallocNames.push_back("_Znam");
 }
 
+bool BasicPointerAnalysis::shouldFilterOut(Value *V) const {
+  if (Argument *Arg = dyn_cast<Argument>(V)) {
+    if (Arg->getParent()->isDeclaration())
+      return true;
+  }
+  return false;
+}
+
 bool BasicPointerAnalysis::runOnModule(Module &M) {
   AliasAnalysis &AA = getAnalysis<AliasAnalysis>();
   IDAssigner &IDA = getAnalysis<IDAssigner>();
 
-  list<Value *> RemainingValues;
-  for (unsigned i = 0; i < IDA.getNumValues(); ++i)
-    RemainingValues.push_back(IDA.getValue(i));
+  list<Value *> RemainingPointers;
+  for (unsigned i = 0; i < IDA.getNumValues(); ++i) {
+    Value *V = IDA.getValue(i);
+    if (V->getType()->isPointerTy() && !shouldFilterOut(V))
+      RemainingPointers.push_back(V);
+  }
 
-  while (!RemainingValues.empty()) {
-    Value *TheLeader = RemainingValues.front();
-    for (list<Value *>::iterator I = RemainingValues.begin();
-         I != RemainingValues.end(); ) {
+  // Note that pointers and pointees are all of PointerType. 
+  while (!RemainingPointers.empty()) {
+    Value *TheLeader = RemainingPointers.front();
+    for (list<Value *>::iterator I = RemainingPointers.begin();
+         I != RemainingPointers.end(); ) {
       Value *V = *I;
-      if (AA.alias(TheLeader, 0, V, 0) != AliasAnalysis::NoAlias) {
+      // alias(V1, 0, V2, 0) would always return NoAlias, because the ranges
+      // are zero-size and thus disjoint. 
+#if 0
+      errs() << "===============\n";
+      errs() << IDA.getValueID(TheLeader) << " " << IDA.getValueID(V) << "\n";
+      errs() << *TheLeader << "\n" << *V << "\n";
+#endif
+      if (AA.alias(TheLeader, 1, V, 1) != AliasAnalysis::NoAlias) {
         Leader[V] = TheLeader;
         if (isa<GlobalValue>(V) || isa<AllocaInst>(V) || isMallocCall(V))
           Allocators[TheLeader].push_back(V); 
         list<Value *>::iterator ToDelete = I;
         ++I;
-        RemainingValues.erase(ToDelete);
+        RemainingPointers.erase(ToDelete);
       } else {
         ++I;
       }
@@ -112,9 +138,12 @@ bool BasicPointerAnalysis::runOnModule(Module &M) {
   return false;
 }
 
-void BasicPointerAnalysis::getPointees(const Value *Pointer,
+bool BasicPointerAnalysis::getPointees(const Value *Pointer,
                                        ValueList &Pointees) {
-  assert(Leader.count(Pointer) && "<Pointer> is not a captured value");
+  assert(Pointer->getType()->isPointerTy() && "<Pointer> is not a pointer");
+
+  if (!Leader.count(Pointer))
+    return false;
   const Value *TheLeader = Leader.lookup(Pointer);
 
   Pointees.clear();
@@ -122,6 +151,8 @@ void BasicPointerAnalysis::getPointees(const Value *Pointer,
       Allocators.find(TheLeader);
   if (I != Allocators.end())
     Pointees = I->second;
+
+  return true;
 }
 
 bool BasicPointerAnalysis::isMallocCall(Value *V) const {
