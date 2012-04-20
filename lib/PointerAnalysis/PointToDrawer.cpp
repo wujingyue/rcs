@@ -20,7 +20,6 @@ struct PointToDrawer: public ModulePass {
   PointToDrawer(): ModulePass(ID) {}
   virtual void getAnalysisUsage(AnalysisUsage &AU) const;
   virtual bool runOnModule(Module &M);
-  virtual void print(raw_ostream &O, const Module *M) const;
 };
 }
 
@@ -47,10 +46,6 @@ bool PointToDrawer::runOnModule(Module &M) {
   PA.printDot(DotFile, IDA);
 
   return false;
-}
-
-void PointToDrawer::print(raw_ostream &O, const Module *M) const {
-  // Do nothing. 
 }
 
 static RegisterPass<PointToDrawer> X("draw-point-to",
