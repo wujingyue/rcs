@@ -25,6 +25,7 @@ struct BasicPointerAnalysis: public ModulePass, public PointerAnalysis {
   BasicPointerAnalysis();
   virtual void getAnalysisUsage(AnalysisUsage &AU) const;
   virtual bool runOnModule(Module &M);
+  virtual void getAllPointers(ValueList &Pointers);
   virtual bool getPointees(const Value *Pointer, ValueList &Pointees);
   virtual void print(raw_ostream &O, const Module *M) const;
   // A very important function. Otherwise getAnalysis<PointerAnalysis> would
@@ -99,14 +100,10 @@ bool BasicPointerAnalysis::shouldFilterOut(Value *V) const {
 
 bool BasicPointerAnalysis::runOnModule(Module &M) {
   AliasAnalysis &AA = getAnalysis<AliasAnalysis>();
-  IDAssigner &IDA = getAnalysis<IDAssigner>();
 
-  list<Value *> RemainingPointers;
-  for (unsigned i = 0; i < IDA.getNumValues(); ++i) {
-    Value *V = IDA.getValue(i);
-    if (V->getType()->isPointerTy() && !shouldFilterOut(V))
-      RemainingPointers.push_back(V);
-  }
+  ValueList AllPointers;
+  getAllPointers(AllPointers);
+  list<Value *> RemainingPointers(AllPointers.begin(), AllPointers.end());
 
   // Note that pointers and pointees are all of PointerType. 
   while (!RemainingPointers.empty()) {
@@ -136,6 +133,17 @@ bool BasicPointerAnalysis::runOnModule(Module &M) {
   dbgs() << "# of equivalence classes = " << Allocators.size() << "\n";
   
   return false;
+}
+
+void BasicPointerAnalysis::getAllPointers(ValueList &Pointers) {
+  IDAssigner &IDA = getAnalysis<IDAssigner>();
+
+  Pointers.clear();
+  for (unsigned i = 0; i < IDA.getNumValues(); ++i) {
+    Value *V = IDA.getValue(i);
+    if (V->getType()->isPointerTy() && !shouldFilterOut(V))
+      Pointers.push_back(V);
+  }
 }
 
 bool BasicPointerAnalysis::getPointees(const Value *Pointer,

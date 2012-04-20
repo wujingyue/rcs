@@ -3,11 +3,10 @@
 #ifndef __RCS_POINTER_ANALYSIS_H
 #define __RCS_POINTER_ANALYSIS_H
 
-#include <cstdio>
-
 #include "llvm/Value.h"
 
 #include "common/typedefs.h"
+#include "common/IDAssigner.h"
 
 namespace rcs {
 struct PointerAnalysis {
@@ -21,6 +20,9 @@ struct PointerAnalysis {
   // possible to capture all pointers. 
   virtual bool getPointees(const llvm::Value *Pointer,
                            rcs::ValueList &Pointees) = 0;
+  virtual void getAllPointers(rcs::ValueList &Pointers) = 0;
+  // Print a .dot file to <O>, which generates a point-to graph. 
+  virtual void printDot(raw_ostream &O, IDAssigner &IDA);
  protected:
   PointerAnalysis() {}
 };
