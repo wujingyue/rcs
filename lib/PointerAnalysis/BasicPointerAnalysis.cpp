@@ -27,7 +27,6 @@ struct BasicPointerAnalysis: public ModulePass, public PointerAnalysis {
   virtual bool runOnModule(Module &M);
   virtual void getAllPointers(ValueList &Pointers);
   virtual bool getPointees(const Value *Pointer, ValueList &Pointees);
-  virtual void print(raw_ostream &O, const Module *M) const;
   // A very important function. Otherwise getAnalysis<PointerAnalysis> would
   // not be able to return BasicPointerAnalysis. 
   virtual void *getAdjustedAnalysisPointer(AnalysisID PI);
@@ -59,7 +58,7 @@ INITIALIZE_AG_PASS_END(BasicPointerAnalysis, PointerAnalysis, "basicpa",
 #endif
 
 #if 1
-static RegisterPass<BasicPointerAnalysis> X("basicpa",
+static RegisterPass<BasicPointerAnalysis> X("basic-pa",
                                             "Basic Pointer Analysis",
                                             false, // Is CFG Only? 
                                             true); // Is Analysis? 
@@ -181,9 +180,6 @@ bool BasicPointerAnalysis::isMalloc(Function *F) const {
                                             MallocNames.end(),
                                             F->getName());
   return Pos != MallocNames.end();
-}
-
-void BasicPointerAnalysis::print(raw_ostream &O, const Module *M) const {
 }
 
 void *BasicPointerAnalysis::getAdjustedAnalysisPointer(AnalysisID PI) {
