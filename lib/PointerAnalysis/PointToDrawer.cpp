@@ -26,7 +26,7 @@ struct PointToDrawer: public ModulePass {
 static cl::opt<string> DotFileName("dot",
                                    cl::desc("The output graph file name"
                                             " (.dot)"));
-static cl::opt<bool> ShouldPrintStat("pointer-stat",
+static cl::opt<bool> ShouldPrintStat("pointer-stats",
                                      cl::desc("Print stat info of "
                                               "PointerAnalysis"));
 
