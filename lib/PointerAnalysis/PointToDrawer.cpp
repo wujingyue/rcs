@@ -25,8 +25,10 @@ struct PointToDrawer: public ModulePass {
 
 static cl::opt<string> DotFileName("dot",
                                    cl::desc("The output graph file name"
-                                            " (.dot)"),
-                                   cl::ValueRequired);
+                                            " (.dot)"));
+static cl::opt<bool> ShouldPrintStat("pointer-stat",
+                                     cl::desc("Print stat info of "
+                                              "PointerAnalysis"));
 
 char PointToDrawer::ID = 0;
 
@@ -40,10 +42,15 @@ bool PointToDrawer::runOnModule(Module &M) {
   IDAssigner &IDA = getAnalysis<IDAssigner>();
   PointerAnalysis &PA = getAnalysis<PointerAnalysis>();
 
-  assert(DotFileName != "");
-  string ErrorInfo;
-  raw_fd_ostream DotFile(DotFileName.c_str(), ErrorInfo);
-  PA.printDot(DotFile, IDA);
+  if (DotFileName != "") {
+    string ErrorInfo;
+    raw_fd_ostream DotFile(DotFileName.c_str(), ErrorInfo);
+    PA.printDot(DotFile, IDA);
+  }
+
+  if (ShouldPrintStat) {
+    PA.printStats(errs());
+  }
 
   return false;
 }

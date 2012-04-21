@@ -72,3 +72,17 @@ void PointerAnalysis::printDot(raw_ostream &O, IDAssigner &IDA) {
 
   O << "}\n";
 }
+
+void PointerAnalysis::printStats(raw_ostream &O) {
+  ValueList Pointers;
+  getAllPointers(Pointers);
+  O << "# of pointers = " << Pointers.size() << "\n";
+
+  unsigned NumPointTos = 0;
+  for (size_t i = 0; i < Pointers.size(); ++i) {
+    ValueList Pointees;
+    getPointees(Pointers[i], Pointees);
+    NumPointTos += Pointees.size();
+  }
+  O << "# of point-to relations = " << NumPointTos << "\n";
+}
