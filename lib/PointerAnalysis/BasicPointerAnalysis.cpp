@@ -25,8 +25,10 @@ struct BasicPointerAnalysis: public ModulePass, public PointerAnalysis {
   BasicPointerAnalysis();
   virtual void getAnalysisUsage(AnalysisUsage &AU) const;
   virtual bool runOnModule(Module &M);
+
   virtual void getAllPointers(ValueList &Pointers);
   virtual bool getPointees(const Value *Pointer, ValueList &Pointees);
+
   // A very important function. Otherwise getAnalysis<PointerAnalysis> would
   // not be able to return BasicPointerAnalysis. 
   virtual void *getAdjustedAnalysisPointer(AnalysisID PI);
@@ -48,25 +50,11 @@ struct BasicPointerAnalysis: public ModulePass, public PointerAnalysis {
 
 char BasicPointerAnalysis::ID = 0;
 
-#if 0
-INITIALIZE_AG_PASS_BEGIN(BasicPointerAnalysis, PointerAnalysis, "basicpa",
-                         "Basic Pointer Analysis", false, true, true)
-INITIALIZE_PASS_DEPENDENCY(IDAssigner)
-INITIALIZE_AG_DEPENDENCY(AliasAnalysis)
-INITIALIZE_AG_PASS_END(BasicPointerAnalysis, PointerAnalysis, "basicpa",
-                       "Basic Pointer Analysis", false, true, true)
-#endif
-
-#if 1
 static RegisterPass<BasicPointerAnalysis> X("basic-pa",
                                             "Basic Pointer Analysis",
                                             false, // Is CFG Only? 
                                             true); // Is Analysis? 
-#endif
-
-#if 1
 static RegisterAnalysisGroup<PointerAnalysis, true> Y(X);
-#endif
 
 void BasicPointerAnalysis::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.setPreservesAll();
@@ -75,9 +63,6 @@ void BasicPointerAnalysis::getAnalysisUsage(AnalysisUsage &AU) const {
 }
 
 BasicPointerAnalysis::BasicPointerAnalysis(): ModulePass(ID) {
-#if 0
-  initializeBasicPointerAnalysisPass(*PassRegistry::getPassRegistry());
-#endif
   // Initialize the list of memory allocatores.
   MallocNames.push_back("malloc");
   MallocNames.push_back("calloc");
@@ -112,11 +97,6 @@ bool BasicPointerAnalysis::runOnModule(Module &M) {
       Value *V = *I;
       // alias(V1, 0, V2, 0) would always return NoAlias, because the ranges
       // are zero-size and thus disjoint. 
-#if 0
-      errs() << "===============\n";
-      errs() << IDA.getValueID(TheLeader) << " " << IDA.getValueID(V) << "\n";
-      errs() << *TheLeader << "\n" << *V << "\n";
-#endif
       if (AA.alias(TheLeader, 1, V, 1) != AliasAnalysis::NoAlias) {
         Leader[V] = TheLeader;
         if (isa<GlobalValue>(V) || isa<AllocaInst>(V) || isMallocCall(V))

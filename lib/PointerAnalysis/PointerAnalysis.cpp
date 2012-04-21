@@ -24,26 +24,7 @@ using namespace rcs;
 
 char PointerAnalysis::ID = 0;
 
-#if 0
-INITIALIZE_ANALYSIS_GROUP(PointerAnalysis,
-                          "Pointer Analysis",
-                          BasicPointerAnalysis)
-#endif
-
-#if 1
 static RegisterAnalysisGroup<PointerAnalysis> A("Pointer Analysis");
-#endif
-
-#if 0
-struct RegisterPointerAnalysisPasses {
-  RegisterPointerAnalysisPasses() {
-    PassRegistry &Reg = *PassRegistry::getPassRegistry();
-    initializePointerAnalysisAnalysisGroup(Reg);
-    initializeBasicPointerAnalysisPass(Reg);
-  }
-};
-static RegisterPointerAnalysisPasses X;
-#endif
 
 void PointerAnalysis::printDot(raw_ostream &O, IDAssigner &IDA) {
   O << "strict digraph PointTo {\n";
