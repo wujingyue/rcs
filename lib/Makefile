@@ -1,6 +1,6 @@
 LEVEL = ..
 
-DIRS = id cfg SourceLocator PointerAnalysis
+DIRS = id cfg SourceLocator PointerAnalysis Andersens
 
 OPTIONAL_DIRS = misc
 
