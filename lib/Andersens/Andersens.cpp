@@ -70,6 +70,8 @@
 #include "llvm/ADT/Statistic.h"
 #include "llvm/ADT/SparseBitVector.h"
 #include "llvm/ADT/DenseSet.h"
+// Added by Jingyue
+#include "common/PointerAnalysis.h"
 #include <algorithm>
 #include <set>
 #include <list>
@@ -124,7 +126,7 @@ struct BitmapKeyInfo {
 };
 
 
-class Andersens: public ModulePass, public AliasAnalysis, private InstVisitor<Andersens> {
+class Andersens: public ModulePass, public AliasAnalysis, public rcs::PointerAnalysis, private InstVisitor<Andersens> {
   struct Node;
 
   /// Constraint - Objects of this structure are used to represent the various
@@ -436,6 +438,39 @@ class Andersens: public ModulePass, public AliasAnalysis, private InstVisitor<An
   static char ID;
   Andersens() : ModulePass(ID) {}
 
+  virtual void *getAdjustedAnalysisPointer(AnalysisID PI) {
+    if (PI == &AliasAnalysis::ID)
+      return (AliasAnalysis *)this;
+    if (PI == &PointerAnalysis::ID)
+      return (PointerAnalysis *)this;
+    return this;
+  }
+
+  bool getPointees(const Value *Pointer, rcs::ValueList &Pointees) {
+    assert(Pointer);
+    Node *N = &GraphNodes[FindNode(getNode(const_cast<Value *>(Pointer)))];
+    assert(N);
+    assert(N->PointsTo);
+    for (SparseBitVector<>::iterator BI = N->PointsTo->begin();
+         BI != N->PointsTo->end(); ++BI) {
+      Node *PointeeNode = &GraphNodes[*BI];
+      assert(PointeeNode);
+      if (Value *V = PointeeNode->getValue())
+        Pointees.push_back(V);
+    }
+    return true;
+  }
+
+  void getAllPointers(rcs::ValueList &Pointers) {
+    Pointers.clear();
+    for (size_t i = 0; i < GraphNodes.size(); ++i) {
+      // GraphNodes contains null objects. 
+      if (Value *V = GraphNodes[i].getValue())
+        if (V->getType()->isPointerTy())
+          Pointers.push_back(V);
+    }
+  }
+
   bool runOnModule(Module &M) {
     InitializeAliasAnalysis(this);
     IdentifyObjects(M);
@@ -619,6 +654,8 @@ char Andersens::ID = 0;
 static RegisterPass<Andersens>
 X("anders-aa", "Andersen's Interprocedural Alias Analysis", false, true);
 static RegisterAnalysisGroup<AliasAnalysis> Y(X);
+// Added by Jingyue
+static RegisterAnalysisGroup<rcs::PointerAnalysis> Z(X);
 
 // Initialize Timestamp Counter (static).
 volatile llvm::sys::cas_flag Andersens::Node::Counter = 0;
@@ -1011,13 +1048,15 @@ bool Andersens::AnalyzeUsesOfFunction(Value *V) {
     } else if (CallInst *CI = dyn_cast<CallInst>(*UI)) {
       // Make sure that this is just the function being called, not that it is
       // passing into the function.
-      for (unsigned i = 1, e = CI->getNumOperands(); i != e; ++i)
-        if (CI->getOperand(i) == V) return true;
+      CallSite CS(CI);
+      for (unsigned i = 0, e = CS.arg_size(); i != e; ++i)
+        if (CS.getArgument(i) == V) return true;
     } else if (InvokeInst *II = dyn_cast<InvokeInst>(*UI)) {
       // Make sure that this is just the function being called, not that it is
       // passing into the function.
-      for (unsigned i = 3, e = II->getNumOperands(); i != e; ++i)
-        if (II->getOperand(i) == V) return true;
+      CallSite CS(II);
+      for (unsigned i = 0, e = CS.arg_size(); i != e; ++i)
+        if (CS.getArgument(i) == V) return true;
     } else if (ConstantExpr *CE = dyn_cast<ConstantExpr>(*UI)) {
       if (CE->getOpcode() == Instruction::GetElementPtr ||
           CE->getOpcode() == Instruction::BitCast) {
