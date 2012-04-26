@@ -21,8 +21,6 @@ struct PointerAnalysis {
   virtual bool getPointees(const llvm::Value *Pointer,
                            rcs::ValueList &Pointees) = 0;
   virtual void getAllPointers(rcs::ValueList &Pointers) = 0;
-  // Print a .dot file to <O>, which generates a point-to graph. 
-  void printDot(raw_ostream &O, IDAssigner &IDA);
   // Print some stat information to <O>. 
   void printStats(raw_ostream &O);
 
