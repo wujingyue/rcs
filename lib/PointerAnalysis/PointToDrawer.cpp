@@ -23,7 +23,7 @@ struct PointToDrawer: public ModulePass {
 };
 }
 
-static cl::opt<string> DotFileName("dot",
+static cl::opt<string> DotFileName("pointer-dot",
                                    cl::desc("The output graph file name"
                                             " (.dot)"));
 static cl::opt<bool> ShouldPrintStat("pointer-stats",
