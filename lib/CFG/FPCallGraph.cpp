@@ -9,6 +9,7 @@
 using namespace std;
 
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Analysis/CallGraph.h"
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "common/InitializePasses.h"
 #include "bc2bdd/InitializePasses.h"
@@ -18,223 +19,230 @@ using namespace llvm;
 #include "common/util.h"
 using namespace rcs;
 
-INITIALIZE_PASS_BEGIN(FPCallGraph, "fpcg",
-		"Call graph that recognizes function pointers", false, true)
+INITIALIZE_AG_PASS_BEGIN(FPCallGraph, CallGraph, "fpcg",
+                         "Call graph that recognizes function pointers",
+                         false, true, false)
 INITIALIZE_AG_DEPENDENCY(AliasAnalysis)
-INITIALIZE_PASS_END(FPCallGraph, "fpcg",
-		"Call graph that recognizes function pointers", false, true)
+INITIALIZE_AG_PASS_END(FPCallGraph, CallGraph, "fpcg",
+                       "Call graph that recognizes function pointers",
+                       false, true, false)
 
 char FPCallGraph::ID = 0;
 
 void FPCallGraph::getAnalysisUsage(AnalysisUsage &AU) const {
-	AU.setPreservesAll();
-	AU.addRequired<AliasAnalysis>();
+  AU.setPreservesAll();
+  AU.addRequired<AliasAnalysis>();
 }
 
-FPCallGraph::FPCallGraph():
-	ModulePass(ID), root(NULL), extern_calling_node(NULL),
-	calls_extern_node(NULL)
-{
-	initializeFPCallGraphPass(*PassRegistry::getPassRegistry());
+void *FPCallGraph::getAdjustedAnalysisPointer(AnalysisID PI) {
+  if (PI == &CallGraph::ID)
+    return (CallGraph*)this;
+  return this;
+}
+
+FPCallGraph::FPCallGraph(): ModulePass(ID) {
+  initializeFPCallGraphPass(*PassRegistry::getPassRegistry());
+  Root = NULL;
+  ExternCallingNode = NULL;
+  CallsExternNode = NULL;
 }
 
 void FPCallGraph::destroy() {
-	// <calls_extern_node> is not in the function map, delete it explicitly. 
-	delete calls_extern_node;
-	calls_extern_node = NULL;
-	CallGraph::destroy();
+  // <CallsExternNode> is not in the function map, delete it explicitly. 
+  delete CallsExternNode;
+  CallsExternNode = NULL;
+  CallGraph::destroy();
 }
 
-void FPCallGraph::add_call_edge(const CallSite &site, Function *callee) {
-	Instruction *ins = site.getInstruction();
-	assert(ins);
-	called_funcs[ins].push_back(callee);
-	call_sites[callee].push_back(ins);
-	// Update CallGraph as well. 
-	CallGraphNode *node = getOrInsertFunction(ins->getParent()->getParent());
-	node->addCalledFunction(site, getOrInsertFunction(callee));
+void FPCallGraph::addCallEdge(const CallSite &Site, Function *Callee) {
+  Instruction *Ins = Site.getInstruction();
+  assert(Ins);
+  SiteToFuncs[Ins].push_back(Callee);
+  FuncToSites[Callee].push_back(Ins);
+  // Update CallGraph as well. 
+  CallGraphNode *Node = getOrInsertFunction(Ins->getParent()->getParent());
+  Node->addCalledFunction(Site, getOrInsertFunction(Callee));
 }
 
 template <class T>
-void FPCallGraph::make_unique(vector<T> &v) {
-	sort(v.begin(), v.end());
-	v.resize(unique(v.begin(), v.end()) - v.begin());
+void FPCallGraph::MakeUnique(vector<T> &V) {
+  sort(V.begin(), V.end());
+  V.resize(unique(V.begin(), V.end()) - V.begin());
 }
 
-FuncList FPCallGraph::get_called_functions(
-		const Instruction *ins) const {
-	SiteFuncMapping::const_iterator it = called_funcs.find(ins);
-	if (it == called_funcs.end())
-		return FuncList();
-	return it->second;
+FuncList FPCallGraph::getCalledFunctions(
+    const Instruction *Ins) const {
+  SiteToFuncsMapTy::const_iterator I = SiteToFuncs.find(Ins);
+  if (I == SiteToFuncs.end())
+    return FuncList();
+  return I->second;
 }
 
-InstList FPCallGraph::get_call_sites(
-		const Function *f) const {
-	FuncSiteMapping::const_iterator it = call_sites.find(f);
-	if (it == call_sites.end())
-		return InstList();
-	return it->second;
+InstList FPCallGraph::getCallSites(
+    const Function *F) const {
+  FuncToSitesMapTy::const_iterator I = FuncToSites.find(F);
+  if (I == FuncToSites.end())
+    return InstList();
+  return I->second;
 }
 
-void FPCallGraph::process_call_site(const CallSite &cs,
-		const FuncSet &all_funcs) {
-	AliasAnalysis &AA = getAnalysis<AliasAnalysis>();
+void FPCallGraph::processCallSite(const CallSite &CS, const FuncSet &AllFuncs) {
+  AliasAnalysis &AA = getAnalysis<AliasAnalysis>();
 
-	if (Function *callee = cs.getCalledFunction()) {
-		add_call_edge(cs, callee);
-		const Instruction *ii = cs.getInstruction();
-		if (is_pthread_create(ii)) {
-			// Add edge: ii => the thread function
-			Value *target = get_pthread_create_callee(ii);
-			if (Function *thr_func = dyn_cast<Function>(target)) {
-				// pthread_create with a known function
-				add_call_edge(cs, thr_func);
-			} else {
-				// Ask AA which functions <target> may point to. 
-				for (FuncSet::const_iterator it = all_funcs.begin();
-						it != all_funcs.end(); ++it) {
-					if (AA.alias(target, *it))
-						add_call_edge(cs, *it);
-				}
-			}
-		}
-	} else {
-		Value *fp = cs.getCalledValue();
-		assert(fp && "Cannot find the function pointer");
-		// Ask AA which functions <fp> may point to. 
-		for (FuncSet::const_iterator it = all_funcs.begin();
-				it != all_funcs.end(); ++it) {
-			if (AA.alias(fp, *it))
-				add_call_edge(cs, *it);
-		}
-	}
+  if (Function *Callee = CS.getCalledFunction()) {
+    addCallEdge(CS, Callee);
+    const Instruction *Ins = CS.getInstruction();
+    if (is_pthread_create(Ins)) {
+      // Add edge: Ins => the thread function
+      Value *Target = get_pthread_create_callee(Ins);
+      if (Function *ThrFunc = dyn_cast<Function>(Target)) {
+        // pthread_create with a known function
+        addCallEdge(CS, ThrFunc);
+      } else {
+        // Ask AA which functions <target> may point to. 
+        for (FuncSet::const_iterator I = AllFuncs.begin();
+             I != AllFuncs.end(); ++I) {
+          if (AA.alias(Target, *I))
+            addCallEdge(CS, *I);
+        }
+      }
+    }
+  } else {
+    Value *FP = CS.getCalledValue();
+    assert(FP && "Cannot find the function pointer");
+    // Ask AA which functions <fp> may point to. 
+    for (FuncSet::const_iterator I = AllFuncs.begin();
+         I != AllFuncs.end(); ++I) {
+      if (AA.alias(FP, *I))
+        addCallEdge(CS, *I);
+    }
+  }
 }
 
 bool FPCallGraph::runOnModule(Module &M) {
-	// Initialize super class CallGraph.
-	CallGraph::initialize(M);
+  // Initialize super class CallGraph.
+  CallGraph::initialize(M);
 
-	// Use getOrInsertFunction(NULL) so that
-	// extern_calling_node->getFunction() returns NULL. 
-	extern_calling_node = getOrInsertFunction(NULL);
-	calls_extern_node = new CallGraphNode(NULL);
+  // Use getOrInsertFunction(NULL) so that
+  // ExternCallingNode->getFunction() returns NULL. 
+  ExternCallingNode = getOrInsertFunction(NULL);
+  CallsExternNode = new CallGraphNode(NULL);
 
-	// Every function need to have a corresponding CallGraphNode. 
-	forallfunc(M, fi)
-		getOrInsertFunction(fi);
+  // Every function need to have a corresponding CallGraphNode. 
+  for (Module::iterator F = M.begin(); F != M.end(); ++F)
+    getOrInsertFunction(F);
 
-	/*
-	 * Get the set of all defined functions. 
-	 * Will be used as a candidate set for point-to analysis. 
-	 * FIXME: Currently we have to skip external functions, otherwise
-	 * bc2bdd would fail. Don't ask me why. 
-	 */
-	FuncSet all_funcs;
-	for (Module::iterator f = M.begin(); f != M.end(); ++f) {
-		if (!f->isDeclaration())
-			all_funcs.insert(f);
-	}
+  /*
+   * Get the set of all defined functions. 
+   * Will be used as a candidate set for point-to analysis. 
+   * FIXME: Currently we have to skip external functions, otherwise
+   * bc2bdd would fail. Don't ask me why. 
+   */
+  FuncSet AllFuncs;
+  for (Module::iterator F = M.begin(); F != M.end(); ++F) {
+    if (!F->isDeclaration())
+      AllFuncs.insert(F);
+  }
 
-	/* Get root (main function) */
-	unsigned n_mains = 0;
-	for (Module::iterator f = M.begin(); f != M.end(); ++f) {
-		if (!f->hasLocalLinkage() && f->getNameStr() == "main") {
-			n_mains++;
-			root = getOrInsertFunction(f);
-		}
-	}
-	// No root if no main function or more than one main functions. 
-	if (n_mains != 1)
-		root = extern_calling_node;
-	
-	// Connect <extern_calling_node>
-	if (root != extern_calling_node) {
-		extern_calling_node->addCalledFunction(CallSite(), root);
-	} else {
-		for (Module::iterator f = M.begin(); f != M.end(); ++f) {
-			if (!f->hasLocalLinkage()) {
-				extern_calling_node->addCalledFunction(
-						CallSite(), getOrInsertFunction(f));
-			}
-		}
-	}
-	
-	// Connect <calls_extern_node>.
-	for (Module::iterator f = M.begin(); f != M.end(); ++f) {
-		if (f->isDeclaration()) {
-			getOrInsertFunction(f)->addCalledFunction(
-					CallSite(), calls_extern_node);
-		}
-	}
+  /* Get Root (main function) */
+  unsigned NumMains = 0;
+  for (Module::iterator F = M.begin(); F != M.end(); ++F) {
+    if (!F->hasLocalLinkage() && F->getNameStr() == "main") {
+      NumMains++;
+      Root = getOrInsertFunction(F);
+    }
+  }
+  // No root if no main function or more than one main functions. 
+  if (NumMains != 1)
+    Root = ExternCallingNode;
 
-	// Build the call graph. 
-	called_funcs.clear();
-	call_sites.clear();
-	for (Module::iterator f = M.begin(); f != M.end(); ++f) {
-		for (Function::iterator bb = f->begin(); bb != f->end(); ++bb) {
-			for (BasicBlock::iterator ins = bb->begin(); ins != bb->end(); ++ins) {
-				CallSite cs(ins);
-				if (cs.getInstruction())
-					process_call_site(cs, all_funcs);
-			}
-		}
-	}
+  // Connect <ExternCallingNode>
+  if (Root != ExternCallingNode) {
+    ExternCallingNode->addCalledFunction(CallSite(), Root);
+  } else {
+    for (Module::iterator F = M.begin(); F != M.end(); ++F) {
+      if (!F->hasLocalLinkage()) {
+        ExternCallingNode->addCalledFunction(CallSite(),
+                                             getOrInsertFunction(F));
+      }
+    }
+  }
 
-	// Simplify the call graph. 
-	simplify_call_graph();
+  // Connect <CallsExternNode>.
+  for (Module::iterator F = M.begin(); F != M.end(); ++F) {
+    if (F->isDeclaration())
+      getOrInsertFunction(F)->addCalledFunction(CallSite(), CallsExternNode);
+  }
 
-	return false;
+  // Build the call graph. 
+  SiteToFuncs.clear();
+  FuncToSites.clear();
+  for (Module::iterator F = M.begin(); F != M.end(); ++F) {
+    for (Function::iterator BB = F->begin(); BB != F->end(); ++BB) {
+      for (BasicBlock::iterator Ins = BB->begin(); Ins != BB->end(); ++Ins) {
+        CallSite CS(Ins);
+        if (CS.getInstruction())
+          processCallSite(CS, AllFuncs);
+      }
+    }
+  }
+
+  // Simplify the call graph. 
+  simplifyCallGraph();
+
+  return false;
 }
 
-void FPCallGraph::simplify_call_graph() {
-	// Remove duplicated items in each vector. 
-	forall(SiteFuncMapping, it, called_funcs)
-		make_unique(it->second);
-	forall(FuncSiteMapping, it, call_sites)
-		make_unique(it->second);
+void FPCallGraph::simplifyCallGraph() {
+  // Remove duplicated items in each vector. 
+  for (SiteToFuncsMapTy::iterator I = SiteToFuncs.begin();
+       I != SiteToFuncs.end(); ++I) {
+    MakeUnique(I->second);
+  }
+  for (FuncToSitesMapTy::iterator I = FuncToSites.begin();
+       I != FuncToSites.end(); ++I) {
+    MakeUnique(I->second);
+  }
 }
 
 void FPCallGraph::print(llvm::raw_ostream &O, const Module *M) const {
-	O << "Caller - Callee:\n";
-	for (Module::const_iterator fi = M->begin(); fi != M->end(); ++fi) {
-		// All called functions inside <fi>. 
-		FuncList all_callees;
-		for (Function::const_iterator bi = fi->begin(); bi != fi->end(); ++bi) {
-			for (BasicBlock::const_iterator ii = bi->begin();
-					ii != bi->end(); ++ii) {
-				if (is_call(ii)) {
-					const FuncList &called_funcs = get_called_functions(ii);
-					for (FuncList::const_iterator it = called_funcs.begin();
-							it != called_funcs.end(); ++it)
-						all_callees.push_back(*it);
-				}
-			}
-		}
-		sort(all_callees.begin(), all_callees.end());
-		all_callees.resize(unique(all_callees.begin(), all_callees.end())
-				- all_callees.begin());
-		if (!all_callees.empty()) {
-			O << "\t" << fi->getNameStr() << " calls:\n";
-			forall(FuncList, it, all_callees)
-				O << "\t\t" << (*it)->getNameStr() << "\n";
-		}
-	}
-	O << "Callee - Caller:\n";
-	for (Module::const_iterator fi = M->begin(); fi != M->end(); ++fi) {
-		// All calling functions to <fi>.
-		const InstList &call_sites = get_call_sites(fi);
-		FuncList all_callers;
-		for (InstList::const_iterator it = call_sites.begin();
-				it != call_sites.end(); ++it)
-			all_callers.push_back((*it)->getParent()->getParent());
-		sort(all_callers.begin(), all_callers.end());
-		all_callers.resize(unique(all_callers.begin(), all_callers.end())
-				- all_callers.begin());
-		if (!all_callers.empty()) {
-			O << "\t" << fi->getNameStr() << " is called by:\n";
-			forall(FuncList, it, all_callers)
-				O << "\t\t" << (*it)->getNameStr() << "\n";
-		}
-	}
+  O << "Caller - Callee:\n";
+  for (Module::const_iterator F = M->begin(); F != M->end(); ++F) {
+    // All called functions inside <F>. 
+    FuncList AllCallees;
+    for (Function::const_iterator BB = F->begin(); BB != F->end(); ++BB) {
+      for (BasicBlock::const_iterator Ins = BB->begin();
+           Ins != BB->end(); ++Ins) {
+        if (is_call(Ins)) {
+          const FuncList &CalledFunctions = getCalledFunctions(Ins);
+          for (FuncList::const_iterator I = CalledFunctions.begin();
+               I != CalledFunctions.end(); ++I)
+            AllCallees.push_back(*I);
+        }
+      }
+    }
+    MakeUnique(AllCallees);
+    if (!AllCallees.empty()) {
+      O << "\t" << F->getNameStr() << " calls:\n";
+      forall(FuncList, I, AllCallees)
+          O << "\t\t" << (*I)->getNameStr() << "\n";
+    }
+  }
+  O << "Callee - Caller:\n";
+  for (Module::const_iterator F = M->begin(); F != M->end(); ++F) {
+    // All calling functions to <F>.
+    const InstList &CallSites = getCallSites(F);
+    FuncList AllCallers;
+    for (InstList::const_iterator I = CallSites.begin();
+         I != CallSites.end(); ++I)
+      AllCallers.push_back((*I)->getParent()->getParent());
+    MakeUnique(AllCallers);
+    if (!AllCallers.empty()) {
+      O << "\t" << F->getNameStr() << " is called by:\n";
+      for (FuncList::iterator I = AllCallers.begin();
+           I != AllCallers.end(); ++I) {
+        O << "\t\t" << (*I)->getNameStr() << "\n";
+      }
+    }
+  }
 }

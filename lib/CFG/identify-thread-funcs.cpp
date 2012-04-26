@@ -36,7 +36,7 @@ bool IdentifyThreadFuncs::runOnModule(Module &M) {
 					thread_funcs.insert(cast<Function>(thr_func));
 				} else {
 					FPCallGraph &CG = getAnalysis<FPCallGraph>();
-					FuncList callees = CG.get_called_functions(ii);
+					FuncList callees = CG.getCalledFunctions(ii);
 					for (size_t i = 0; i < callees.size(); ++i) {
 						if (callees[i]->getName() != "pthread_create")
 							thread_funcs.insert(callees[i]);

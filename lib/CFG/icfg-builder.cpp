@@ -43,7 +43,7 @@ bool ICFGBuilder::runOnModule(Module &M) {
 			// edges? They are supposed to go to the pthread_join sites. 
 			if (mi->end() != bb->end() && !is_pthread_create(mi->end())) {
 				FPCallGraph &CG = getAnalysis<FPCallGraph>();
-				FuncList callees = CG.get_called_functions(mi->end());
+				FuncList callees = CG.getCalledFunctions(mi->end());
 				bool calls_decl = false;
 				for (size_t i = 0; i < callees.size(); ++i) {
 					Function *callee = callees[i];
@@ -66,7 +66,7 @@ bool ICFGBuilder::runOnModule(Module &M) {
 				TerminatorInst *ti = bb->getTerminator();
 				if (is_ret(ti)) {
 					FPCallGraph &CG = getAnalysis<FPCallGraph>();
-					InstList call_sites = CG.get_call_sites(bb->getParent());
+					InstList call_sites = CG.getCallSites(bb->getParent());
 					for (size_t i = 0; i < call_sites.size(); ++i) {
 						Instruction *call_site = call_sites[i];
 						// Ignore inter-thread edges. 

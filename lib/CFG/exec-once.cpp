@@ -95,7 +95,7 @@ void ExecOnce::identify_starting_funcs(Module &M, FuncSet &starts) {
 	
 	// Identify functions that are called by multiple reachable call sites. 
 	forallfunc(M, fi) {
-		InstList call_sites = CG.get_call_sites(fi);
+		InstList call_sites = CG.getCallSites(fi);
 		unsigned n_reachable_call_sites = 0;
 		for (size_t j = 0; j < call_sites.size(); ++j) {
 			Instruction *call_site = call_sites[j];
@@ -111,7 +111,7 @@ void ExecOnce::identify_starting_funcs(Module &M, FuncSet &starts) {
 		BasicBlock *bb = *it;
 		forall(BasicBlock, ii, *bb) {
 			if (is_call(ii)) {
-				FuncList callees = CG.get_called_functions(ii);
+				FuncList callees = CG.getCalledFunctions(ii);
 				for (size_t j = 0; j < callees.size(); ++j)
 					starts.insert(callees[j]);
 			}

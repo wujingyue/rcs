@@ -41,7 +41,7 @@ bool Exec::is_landmark(const Instruction *ins) const {
 
 void Exec::dfs(const Function *f, ConstFuncMapping &parent) {
 	FPCallGraph &CG = getAnalysis<FPCallGraph>();
-	const InstList &call_sites = CG.get_call_sites(f);
+	const InstList &call_sites = CG.getCallSites(f);
 	for (size_t i = 0; i < call_sites.size(); ++i) {
 		Function *caller = call_sites[i]->getParent()->getParent();
 		if (!parent.count(caller)) {
@@ -110,7 +110,7 @@ bool Exec::may_exec_landmark(const Instruction *ins) const {
 		return false;
 
 	FPCallGraph &CG = getAnalysis<FPCallGraph>();
-	FuncList callees = CG.get_called_functions(ins);
+	FuncList callees = CG.getCalledFunctions(ins);
 	for (size_t i = 0; i < callees.size(); ++i) {
 		if (may_exec_landmark(callees[i]))
 			return true;
@@ -126,7 +126,7 @@ bool Exec::must_exec_landmark(const Instruction *ins) const {
 
 	FPCallGraph &CG = getAnalysis<FPCallGraph>();
 
-	FuncList callees = CG.get_called_functions(ins);
+	FuncList callees = CG.getCalledFunctions(ins);
 	bool all_must_exec = true;
 	for (size_t i = 0; i < callees.size(); ++i) {
 		if (!must_exec_landmark(callees[i])) {
@@ -147,7 +147,7 @@ bool Exec::compute_must_exec(const BasicBlock *bb) {
 		if (landmarks.count(ins))
 			return true;
 		if (is_call(ins)) {
-			FuncList callees = CG.get_called_functions(ins);
+			FuncList callees = CG.getCalledFunctions(ins);
 			bool all_must_exec = true;
 			for (size_t i = 0; i < callees.size(); ++i) {
 				if (!must_exec.count(callees[i])) {

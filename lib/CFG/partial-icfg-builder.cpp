@@ -87,7 +87,7 @@ bool PartialICFGBuilder::runOnModule(Module &M) {
 			// The main function returns to nowhere. 
 			if (is_ret(last) && bb->getParent() != main) {
 				FPCallGraph &CG = getAnalysis<FPCallGraph>();
-				InstList call_sites = CG.get_call_sites(bb->getParent());
+				InstList call_sites = CG.getCallSites(bb->getParent());
 				unsigned n_reachable_call_sites = 0;
 				Instruction *the_call_site = NULL;
 				for (size_t j = 0; j < call_sites.size(); ++j) {
@@ -142,7 +142,7 @@ Function *PartialICFGBuilder::trace_into(Instruction *ins) {
 	if (is_pthread_create(ins))
 		return NULL;
 	FPCallGraph &CG = getAnalysis<FPCallGraph>();
-	FuncList callees = CG.get_called_functions(ins);
+	FuncList callees = CG.getCalledFunctions(ins);
 	if (callees.size() != 1)
 		return NULL;
 	Function *callee = callees[0];

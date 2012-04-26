@@ -106,7 +106,7 @@ bool Reachability::calc_par_postdomed(
 	FPCallGraph &CG = getAnalysis<FPCallGraph>();
 	for (BasicBlock::iterator ii = bb->begin(); ii != bb->end(); ++ii) {
 		if (is_call(ii)) {
-			const FuncList &callees = CG.get_called_functions(ii);
+			const FuncList &callees = CG.getCalledFunctions(ii);
 			// All possible targets are blocked, i.e. post-dominated by <cut>. 
 			bool all_blocked = true;
 			for (size_t k = 0; k < callees.size(); ++k) {
@@ -198,7 +198,7 @@ void Reachability::dfs(
 	FPCallGraph &CG = getAnalysis<FPCallGraph>();
 	if (is_call(x)) {
 		bool all_blocked = true;
-		const FuncList &callees = CG.get_called_functions(x);
+		const FuncList &callees = CG.getCalledFunctions(x);
 		for (size_t j = 0, E = callees.size(); j < E; ++j) {
 			if (callees[j]->isDeclaration()) {
 				all_blocked = false;
@@ -222,7 +222,7 @@ void Reachability::dfs(
 	}
 	
 	if (isa<ReturnInst>(x) || isa<UnwindInst>(x)) {
-		const vector<Instruction *> &call_sites = CG.get_call_sites(
+		const vector<Instruction *> &call_sites = CG.getCallSites(
 				x->getParent()->getParent());
 		for (size_t j = 0, E = call_sites.size(); j < E; ++j) {
 			BasicBlock::iterator ret_addr;
@@ -310,7 +310,7 @@ void Reachability::dfs_r(
 	FPCallGraph &CG = getAnalysis<FPCallGraph>();
 	if (x == x->getParent()->getParent()->getEntryBlock().begin()) {
 		// No problem with going from a function entry to its call site. 
-		const vector<Instruction *> &call_sites = CG.get_call_sites(
+		const vector<Instruction *> &call_sites = CG.getCallSites(
 				x->getParent()->getParent());
 		// TODO: We could distinguish CallInsts and InvokeInsts here. 
 		for (size_t j = 0, E = call_sites.size(); j < E; ++j) {
@@ -354,7 +354,7 @@ void Reachability::dfs_r(
 		// reached from the entry of the callee). 
 		// In this case, we need to examine whether <y> is blocked. 
 		bool all_blocked = true;
-		const FuncList &callees = CG.get_called_functions(y);
+		const FuncList &callees = CG.getCalledFunctions(y);
 		for (size_t j = 0, E = callees.size(); j < E; ++j) {
 			if (callees[j]->isDeclaration()) {
 				all_blocked = false;
@@ -425,7 +425,7 @@ void Reachability::build_par_postdom_graph(Module &M) {
 		// Edge: bi => the entry block of every function it calls. 
 		for (BasicBlock::iterator ii = bi->begin(); ii != bi->end(); ++ii) {
 			if (is_call(ii)) {
-				const FuncList &callees = CG.get_called_functions(ii);
+				const FuncList &callees = CG.getCalledFunctions(ii);
 				for (size_t j = 0, E = callees.size(); j < E; ++j) {
 					// Skip empty functions because they don't have any BBs. 
 					if (callees[j]->isDeclaration())
