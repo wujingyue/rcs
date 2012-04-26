@@ -13,7 +13,7 @@ using namespace std;
 #include "llvm/Support/CFG.h"
 using namespace llvm;
 
-#include "common/callgraph-fp.h"
+#include "common/FPCallGraph.h"
 #include "common/util.h"
 #include "common/exec-once.h"
 #include "common/InitializePasses.h"
@@ -22,7 +22,7 @@ using namespace rcs;
 INITIALIZE_PASS_BEGIN(ExecOnce, "exec-once",
 		"Identify instructions that can be executed only once", false, true)
 INITIALIZE_AG_DEPENDENCY(CallGraph)
-INITIALIZE_PASS_DEPENDENCY(CallGraphFP)
+INITIALIZE_PASS_DEPENDENCY(FPCallGraph)
 INITIALIZE_PASS_END(ExecOnce, "exec-once",
 		"Identify instructions that can be executed only once", false, true)
 
@@ -38,7 +38,7 @@ ExecOnce::ExecOnce(): ModulePass(ID) {
 void ExecOnce::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequired<CallGraph>();
-	AU.addRequired<CallGraphFP>();
+	AU.addRequired<FPCallGraph>();
 }
 
 void ExecOnce::print(raw_ostream &O, const Module *M) const {
@@ -80,7 +80,7 @@ bool ExecOnce::runOnModule(Module &M) {
 void ExecOnce::identify_starting_funcs(Module &M, FuncSet &starts) {
 	starts.clear();
 	// Identify reachable recursive functions. 
-	CallGraphFP &CG = getAnalysis<CallGraphFP>();
+	FPCallGraph &CG = getAnalysis<FPCallGraph>();
 	CallGraph &raw_CG = CG;
 	for (scc_iterator<CallGraph *> si = scc_begin(&raw_CG),
 			E = scc_end(&raw_CG); si != E; ++si) {
@@ -149,7 +149,7 @@ void ExecOnce::propagate_via_cg(Function *f, FuncSet &visited) {
 	if (visited.count(f))
 		return;
 	visited.insert(f);
-	CallGraph &CG = getAnalysis<CallGraphFP>();
+	CallGraph &CG = getAnalysis<FPCallGraph>();
 	// Operator [] does not change the function mapping. 
 	CallGraphNode *x = CG[f];
 	for (unsigned i = 0; i < x->size(); ++i) {

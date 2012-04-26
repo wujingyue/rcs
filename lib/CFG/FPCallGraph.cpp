@@ -1,10 +1,8 @@
-/**
- * Author: Jingyue
- *
- * A call-graph builder considering function pointers. 
- * The targets of function pointers are identified by alias analysis. 
- * Users may specify which alias analysis she wants to run this pass with. 
- */
+// Author: Jingyue
+// 
+// A call-graph builder considering function pointers. 
+// The targets of function pointers are identified by alias analysis. 
+// Users may specify which alias analysis she wants to run this pass with. 
 
 #include <cstdio>
 #include <fstream>
@@ -16,38 +14,38 @@ using namespace std;
 #include "bc2bdd/InitializePasses.h"
 using namespace llvm;
 
-#include "common/callgraph-fp.h"
+#include "common/FPCallGraph.h"
 #include "common/util.h"
 using namespace rcs;
 
-INITIALIZE_PASS_BEGIN(CallGraphFP, "callgraph-fp",
+INITIALIZE_PASS_BEGIN(FPCallGraph, "fpcg",
 		"Call graph that recognizes function pointers", false, true)
 INITIALIZE_AG_DEPENDENCY(AliasAnalysis)
-INITIALIZE_PASS_END(CallGraphFP, "callgraph-fp",
+INITIALIZE_PASS_END(FPCallGraph, "fpcg",
 		"Call graph that recognizes function pointers", false, true)
 
-char CallGraphFP::ID = 0;
+char FPCallGraph::ID = 0;
 
-void CallGraphFP::getAnalysisUsage(AnalysisUsage &AU) const {
+void FPCallGraph::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequired<AliasAnalysis>();
 }
 
-CallGraphFP::CallGraphFP():
+FPCallGraph::FPCallGraph():
 	ModulePass(ID), root(NULL), extern_calling_node(NULL),
 	calls_extern_node(NULL)
 {
-	initializeCallGraphFPPass(*PassRegistry::getPassRegistry());
+	initializeFPCallGraphPass(*PassRegistry::getPassRegistry());
 }
 
-void CallGraphFP::destroy() {
+void FPCallGraph::destroy() {
 	// <calls_extern_node> is not in the function map, delete it explicitly. 
 	delete calls_extern_node;
 	calls_extern_node = NULL;
 	CallGraph::destroy();
 }
 
-void CallGraphFP::add_call_edge(const CallSite &site, Function *callee) {
+void FPCallGraph::add_call_edge(const CallSite &site, Function *callee) {
 	Instruction *ins = site.getInstruction();
 	assert(ins);
 	called_funcs[ins].push_back(callee);
@@ -58,12 +56,12 @@ void CallGraphFP::add_call_edge(const CallSite &site, Function *callee) {
 }
 
 template <class T>
-void CallGraphFP::make_unique(vector<T> &v) {
+void FPCallGraph::make_unique(vector<T> &v) {
 	sort(v.begin(), v.end());
 	v.resize(unique(v.begin(), v.end()) - v.begin());
 }
 
-FuncList CallGraphFP::get_called_functions(
+FuncList FPCallGraph::get_called_functions(
 		const Instruction *ins) const {
 	SiteFuncMapping::const_iterator it = called_funcs.find(ins);
 	if (it == called_funcs.end())
@@ -71,7 +69,7 @@ FuncList CallGraphFP::get_called_functions(
 	return it->second;
 }
 
-InstList CallGraphFP::get_call_sites(
+InstList FPCallGraph::get_call_sites(
 		const Function *f) const {
 	FuncSiteMapping::const_iterator it = call_sites.find(f);
 	if (it == call_sites.end())
@@ -79,7 +77,7 @@ InstList CallGraphFP::get_call_sites(
 	return it->second;
 }
 
-void CallGraphFP::process_call_site(const CallSite &cs,
+void FPCallGraph::process_call_site(const CallSite &cs,
 		const FuncSet &all_funcs) {
 	AliasAnalysis &AA = getAnalysis<AliasAnalysis>();
 
@@ -113,7 +111,7 @@ void CallGraphFP::process_call_site(const CallSite &cs,
 	}
 }
 
-bool CallGraphFP::runOnModule(Module &M) {
+bool FPCallGraph::runOnModule(Module &M) {
 	// Initialize super class CallGraph.
 	CallGraph::initialize(M);
 
@@ -189,7 +187,7 @@ bool CallGraphFP::runOnModule(Module &M) {
 	return false;
 }
 
-void CallGraphFP::simplify_call_graph() {
+void FPCallGraph::simplify_call_graph() {
 	// Remove duplicated items in each vector. 
 	forall(SiteFuncMapping, it, called_funcs)
 		make_unique(it->second);
@@ -197,7 +195,7 @@ void CallGraphFP::simplify_call_graph() {
 		make_unique(it->second);
 }
 
-void CallGraphFP::print(llvm::raw_ostream &O, const Module *M) const {
+void FPCallGraph::print(llvm::raw_ostream &O, const Module *M) const {
 	O << "Caller - Callee:\n";
 	for (Module::const_iterator fi = M->begin(); fi != M->end(); ++fi) {
 		// All called functions inside <fi>. 

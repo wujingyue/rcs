@@ -9,14 +9,14 @@ using namespace llvm;
 
 #include "common/partial-icfg-builder.h"
 #include "common/exec-once.h"
-#include "common/callgraph-fp.h"
+#include "common/FPCallGraph.h"
 #include "common/util.h"
 using namespace rcs;
 
 INITIALIZE_PASS_BEGIN(PartialICFGBuilder, "partial-icfg-builder",
 		"Builds part of the ICFG", false, true)
 INITIALIZE_PASS_DEPENDENCY(MicroBasicBlockBuilder)
-INITIALIZE_PASS_DEPENDENCY(CallGraphFP)
+INITIALIZE_PASS_DEPENDENCY(FPCallGraph)
 INITIALIZE_PASS_DEPENDENCY(ExecOnce)
 INITIALIZE_PASS_END(PartialICFGBuilder, "partial-icfg-builder",
 		"Builds part of the ICFG", false, true)
@@ -29,7 +29,7 @@ char PartialICFGBuilder::ID = 0;
 void PartialICFGBuilder::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequired<MicroBasicBlockBuilder>();
-	AU.addRequired<CallGraphFP>();
+	AU.addRequired<FPCallGraph>();
 	AU.addRequired<ExecOnce>();
 }
 
@@ -86,7 +86,7 @@ bool PartialICFGBuilder::runOnModule(Module &M) {
 			}
 			// The main function returns to nowhere. 
 			if (is_ret(last) && bb->getParent() != main) {
-				CallGraphFP &CG = getAnalysis<CallGraphFP>();
+				FPCallGraph &CG = getAnalysis<FPCallGraph>();
 				InstList call_sites = CG.get_call_sites(bb->getParent());
 				unsigned n_reachable_call_sites = 0;
 				Instruction *the_call_site = NULL;
@@ -141,7 +141,7 @@ Function *PartialICFGBuilder::trace_into(Instruction *ins) {
 		return NULL;
 	if (is_pthread_create(ins))
 		return NULL;
-	CallGraphFP &CG = getAnalysis<CallGraphFP>();
+	FPCallGraph &CG = getAnalysis<FPCallGraph>();
 	FuncList callees = CG.get_called_functions(ins);
 	if (callees.size() != 1)
 		return NULL;

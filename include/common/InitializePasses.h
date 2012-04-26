@@ -8,7 +8,7 @@
 namespace llvm {
 class PassRegistry;
 
-void initializeCallGraphFPPass(PassRegistry &);
+void initializeFPCallGraphPass(PassRegistry &);
 void initializeExecOncePass(PassRegistry &);
 void initializeExecPass(PassRegistry &);
 void initializeICFGBuilderPass(PassRegistry &);

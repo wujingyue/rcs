@@ -20,7 +20,7 @@ using namespace std;
 #include "common/InitializePasses.h"
 using namespace llvm;
 
-#include "common/callgraph-fp.h"
+#include "common/FPCallGraph.h"
 #include "common/util.h"
 #include "common/inter-reach.h"
 #include "common/IDAssigner.h"
@@ -29,7 +29,7 @@ using namespace rcs;
 INITIALIZE_PASS_BEGIN(Reachability, "reach",
 		"Reachability Analysis", false, true)
 INITIALIZE_PASS_DEPENDENCY(IDAssigner)
-INITIALIZE_PASS_DEPENDENCY(CallGraphFP)
+INITIALIZE_PASS_DEPENDENCY(FPCallGraph)
 INITIALIZE_PASS_END(Reachability, "reach",
 		"Reachability Analysis", false, true)
 
@@ -41,7 +41,7 @@ char Reachability::ID = 0;
 void Reachability::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequired<IDAssigner>();
-	AU.addRequired<CallGraphFP>();
+	AU.addRequired<FPCallGraph>();
 }
 
 Reachability::Reachability(): ModulePass(ID) {
@@ -103,7 +103,7 @@ bool Reachability::calc_par_postdomed(
 			return true;
 	}
 	// Iterate through all call instructions in <bb>. 
-	CallGraphFP &CG = getAnalysis<CallGraphFP>();
+	FPCallGraph &CG = getAnalysis<FPCallGraph>();
 	for (BasicBlock::iterator ii = bb->begin(); ii != bb->end(); ++ii) {
 		if (is_call(ii)) {
 			const FuncList &callees = CG.get_called_functions(ii);
@@ -195,7 +195,7 @@ void Reachability::dfs(
 	assert(x && "<x> cannot be NULL");
 	assert(visited_nodes.count(x));
 	
-	CallGraphFP &CG = getAnalysis<CallGraphFP>();
+	FPCallGraph &CG = getAnalysis<FPCallGraph>();
 	if (is_call(x)) {
 		bool all_blocked = true;
 		const FuncList &callees = CG.get_called_functions(x);
@@ -307,7 +307,7 @@ void Reachability::dfs_r(
 		return;
 
 	// Function entry. 
-	CallGraphFP &CG = getAnalysis<CallGraphFP>();
+	FPCallGraph &CG = getAnalysis<FPCallGraph>();
 	if (x == x->getParent()->getParent()->getEntryBlock().begin()) {
 		// No problem with going from a function entry to its call site. 
 		const vector<Instruction *> &call_sites = CG.get_call_sites(
@@ -419,7 +419,7 @@ void Reachability::floodfill(
 }
 
 void Reachability::build_par_postdom_graph(Module &M) {
-	CallGraphFP &CG = getAnalysis<CallGraphFP>();
+	FPCallGraph &CG = getAnalysis<FPCallGraph>();
 	ppg.clear(); ppg_r.clear();
 	forallbb(M, bi) {
 		// Edge: bi => the entry block of every function it calls. 

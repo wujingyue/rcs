@@ -9,7 +9,7 @@ using namespace llvm;
 struct RegisterCFGPasses {
 	RegisterCFGPasses() {
 		PassRegistry &reg = *PassRegistry::getPassRegistry();
-		initializeCallGraphFPPass(reg);
+		initializeFPCallGraphPass(reg);
 		initializeExecOncePass(reg);
 		initializeExecPass(reg);
 		initializeICFGBuilderPass(reg);

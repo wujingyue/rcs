@@ -6,7 +6,7 @@
 using namespace llvm;
 
 #include "common/icfg-builder.h"
-#include "common/callgraph-fp.h"
+#include "common/FPCallGraph.h"
 #include "common/util.h"
 #include "common/InitializePasses.h"
 using namespace rcs;
@@ -14,7 +14,7 @@ using namespace rcs;
 INITIALIZE_PASS_BEGIN(ICFGBuilder, "icfg",
 		"Build inter-procedural control flow graph", false, true)
 INITIALIZE_PASS_DEPENDENCY(MicroBasicBlockBuilder)
-INITIALIZE_PASS_DEPENDENCY(CallGraphFP)
+INITIALIZE_PASS_DEPENDENCY(FPCallGraph)
 INITIALIZE_PASS_END(ICFGBuilder, "icfg",
 		"Build inter-procedural control flow graph", false, true)
 
@@ -25,7 +25,7 @@ ICFGBuilder::ICFGBuilder(): ModulePass(ID) {
 void ICFGBuilder::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequired<MicroBasicBlockBuilder>();
-	AU.addRequired<CallGraphFP>();
+	AU.addRequired<FPCallGraph>();
 }
 
 bool ICFGBuilder::runOnModule(Module &M) {
@@ -42,7 +42,7 @@ bool ICFGBuilder::runOnModule(Module &M) {
 			// It's also difficult to handle them. How to deal with the return
 			// edges? They are supposed to go to the pthread_join sites. 
 			if (mi->end() != bb->end() && !is_pthread_create(mi->end())) {
-				CallGraphFP &CG = getAnalysis<CallGraphFP>();
+				FPCallGraph &CG = getAnalysis<FPCallGraph>();
 				FuncList callees = CG.get_called_functions(mi->end());
 				bool calls_decl = false;
 				for (size_t i = 0; i < callees.size(); ++i) {
@@ -65,7 +65,7 @@ bool ICFGBuilder::runOnModule(Module &M) {
 				}
 				TerminatorInst *ti = bb->getTerminator();
 				if (is_ret(ti)) {
-					CallGraphFP &CG = getAnalysis<CallGraphFP>();
+					FPCallGraph &CG = getAnalysis<FPCallGraph>();
 					InstList call_sites = CG.get_call_sites(bb->getParent());
 					for (size_t i = 0; i < call_sites.size(); ++i) {
 						Instruction *call_site = call_sites[i];

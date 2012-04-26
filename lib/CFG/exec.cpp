@@ -8,7 +8,7 @@
 using namespace llvm;
 
 #include "common/exec.h"
-#include "common/callgraph-fp.h"
+#include "common/FPCallGraph.h"
 #include "common/util.h"
 #include "common/reach.h"
 #include "common/InitializePasses.h"
@@ -18,7 +18,7 @@ char Exec::ID = 0;
 
 INITIALIZE_PASS_BEGIN(Exec, "exec",
 		"Test whether a function may or must execute a landmark", false, true)
-INITIALIZE_PASS_DEPENDENCY(CallGraphFP)
+INITIALIZE_PASS_DEPENDENCY(FPCallGraph)
 INITIALIZE_PASS_END(Exec, "exec",
 		"Test whether a function may or must execute a landmark", false, true)
 
@@ -28,7 +28,7 @@ Exec::Exec(): ModulePass(ID) {
 
 void Exec::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
-	AU.addRequiredTransitive<CallGraphFP>();
+	AU.addRequiredTransitive<FPCallGraph>();
 }
 
 void Exec::setup_landmarks(const ConstInstSet &landmarks) {
@@ -40,7 +40,7 @@ bool Exec::is_landmark(const Instruction *ins) const {
 }
 
 void Exec::dfs(const Function *f, ConstFuncMapping &parent) {
-	CallGraphFP &CG = getAnalysis<CallGraphFP>();
+	FPCallGraph &CG = getAnalysis<FPCallGraph>();
 	const InstList &call_sites = CG.get_call_sites(f);
 	for (size_t i = 0; i < call_sites.size(); ++i) {
 		Function *caller = call_sites[i]->getParent()->getParent();
@@ -79,7 +79,7 @@ bool Exec::runOnModule(Module &M) {
 }
 
 void Exec::compute_must_exec() {
-	CallGraph &CG = getAnalysis<CallGraphFP>();
+	CallGraph &CG = getAnalysis<FPCallGraph>();
 	for (scc_iterator<CallGraph *> si = scc_begin(&CG), E = scc_end(&CG);
 			si != E; ++si) {
 		for (size_t i = 0; i < (*si).size(); ++i) {
@@ -109,7 +109,7 @@ bool Exec::may_exec_landmark(const Instruction *ins) const {
 	if (!is_call(ins))
 		return false;
 
-	CallGraphFP &CG = getAnalysis<CallGraphFP>();
+	FPCallGraph &CG = getAnalysis<FPCallGraph>();
 	FuncList callees = CG.get_called_functions(ins);
 	for (size_t i = 0; i < callees.size(); ++i) {
 		if (may_exec_landmark(callees[i]))
@@ -124,7 +124,7 @@ bool Exec::must_exec_landmark(const Instruction *ins) const {
 	if (!is_call(ins))
 		return false;
 
-	CallGraphFP &CG = getAnalysis<CallGraphFP>();
+	FPCallGraph &CG = getAnalysis<FPCallGraph>();
 
 	FuncList callees = CG.get_called_functions(ins);
 	bool all_must_exec = true;
@@ -141,7 +141,7 @@ bool Exec::compute_must_exec(const BasicBlock *bb) {
 	/**
 	 * TODO: Doesn't support recursive function calls very well. 
 	 */
-	CallGraphFP &CG = getAnalysis<CallGraphFP>();
+	FPCallGraph &CG = getAnalysis<FPCallGraph>();
 
 	for (BasicBlock::const_iterator ins = bb->begin(); ins != bb->end(); ++ins) {
 		if (landmarks.count(ins))
