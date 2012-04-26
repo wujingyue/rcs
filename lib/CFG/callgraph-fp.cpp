@@ -17,13 +17,11 @@ using namespace std;
 using namespace llvm;
 
 #include "common/callgraph-fp.h"
-#include "common/fp-collector.h"
 #include "common/util.h"
 using namespace rcs;
 
 INITIALIZE_PASS_BEGIN(CallGraphFP, "callgraph-fp",
 		"Call graph that recognizes function pointers", false, true)
-INITIALIZE_PASS_DEPENDENCY(FPCollector)
 INITIALIZE_AG_DEPENDENCY(AliasAnalysis)
 INITIALIZE_PASS_END(CallGraphFP, "callgraph-fp",
 		"Call graph that recognizes function pointers", false, true)
@@ -33,7 +31,6 @@ char CallGraphFP::ID = 0;
 void CallGraphFP::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequired<AliasAnalysis>();
-	AU.addRequired<FPCollector>();
 }
 
 CallGraphFP::CallGraphFP():
@@ -184,13 +181,6 @@ bool CallGraphFP::runOnModule(Module &M) {
 					process_call_site(cs, all_funcs);
 			}
 		}
-	}
-
-	// Add extra call edges via function pointers. 
-	FPCollector &FPC = getAnalysis<FPCollector>();
-	for (unsigned i = 0; i < FPC.get_num_call_edges(); ++i) {
-		pair<Instruction *, Function *> edge = FPC.get_call_edge(i);
-		add_call_edge(CallSite(edge.first), edge.second);
 	}
 
 	// Simplify the call graph. 
