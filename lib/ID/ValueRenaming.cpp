@@ -12,7 +12,6 @@ using namespace std;
 #include "llvm/ADT/Twine.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/DerivedTypes.h"
-#include "common/InitializePasses.h"
 using namespace llvm;
 
 #include "common/IDAssigner.h"
@@ -31,11 +30,8 @@ namespace rcs {
 }
 using namespace rcs;
 
-INITIALIZE_PASS_BEGIN(ValueRenaming, "rename-values",
-		"Rename values to their value IDs", false, false)
-INITIALIZE_PASS_DEPENDENCY(IDAssigner)
-INITIALIZE_PASS_END(ValueRenaming, "rename-values",
-		"Rename values to their value IDs", false, false)
+static RegisterPass<ValueRenaming> X("rename-values",
+		"Rename values to their value IDs", false, false);
 
 void ValueRenaming::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesCFG();
@@ -44,9 +40,7 @@ void ValueRenaming::getAnalysisUsage(AnalysisUsage &AU) const {
 
 char ValueRenaming::ID = 0;
 
-ValueRenaming::ValueRenaming(): ModulePass(ID) {
-	initializeValueRenamingPass(*PassRegistry::getPassRegistry());
-}
+ValueRenaming::ValueRenaming(): ModulePass(ID) {}
 
 bool ValueRenaming::should_rename(const Value *V) {
 	if (isa<Function>(V))

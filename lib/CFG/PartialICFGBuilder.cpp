@@ -4,7 +4,6 @@
 
 #include "llvm/Support/CFG.h"
 #include "llvm/Support/CommandLine.h"
-#include "common/InitializePasses.h"
 using namespace llvm;
 
 #include "common/partial-icfg-builder.h"
@@ -13,13 +12,8 @@ using namespace llvm;
 #include "common/util.h"
 using namespace rcs;
 
-INITIALIZE_PASS_BEGIN(PartialICFGBuilder, "partial-icfg-builder",
-		"Builds part of the ICFG", false, true)
-INITIALIZE_PASS_DEPENDENCY(MicroBasicBlockBuilder)
-INITIALIZE_PASS_DEPENDENCY(FPCallGraph)
-INITIALIZE_PASS_DEPENDENCY(ExecOnce)
-INITIALIZE_PASS_END(PartialICFGBuilder, "partial-icfg-builder",
-		"Builds part of the ICFG", false, true)
+static RegisterPass<PartialICFGBuilder> X("partial-icfg-builder",
+		"Builds part of the ICFG", false, true);
 
 static cl::opt<bool> DumpICFG("dump-icfg",
 		cl::desc("Dump the ICFG"));
@@ -33,9 +27,7 @@ void PartialICFGBuilder::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.addRequired<ExecOnce>();
 }
 
-PartialICFGBuilder::PartialICFGBuilder(): ModulePass(ID) {
-	initializePartialICFGBuilderPass(*PassRegistry::getPassRegistry());
-}
+PartialICFGBuilder::PartialICFGBuilder(): ModulePass(ID) {}
 
 void PartialICFGBuilder::dump_icfg(Module &M) {
 	ICFG::print(errs());

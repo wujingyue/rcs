@@ -11,21 +11,16 @@ using namespace std;
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Analysis/CallGraph.h"
 #include "llvm/Analysis/AliasAnalysis.h"
-#include "common/InitializePasses.h"
-#include "bc2bdd/InitializePasses.h"
 using namespace llvm;
 
 #include "common/FPCallGraph.h"
 #include "common/util.h"
 using namespace rcs;
 
-INITIALIZE_AG_PASS_BEGIN(FPCallGraph, CallGraph, "fpcg",
+static RegisterPass<FPCallGraph> X("fpcg",
                          "Call graph that recognizes function pointers",
-                         false, true, false)
-INITIALIZE_AG_DEPENDENCY(AliasAnalysis)
-INITIALIZE_AG_PASS_END(FPCallGraph, CallGraph, "fpcg",
-                       "Call graph that recognizes function pointers",
-                       false, true, false)
+                         false, true);
+static RegisterAnalysisGroup<CallGraph> Y(X);
 
 char FPCallGraph::ID = 0;
 
@@ -41,7 +36,6 @@ void *FPCallGraph::getAdjustedAnalysisPointer(AnalysisID PI) {
 }
 
 FPCallGraph::FPCallGraph(): ModulePass(ID) {
-  initializeFPCallGraphPass(*PassRegistry::getPassRegistry());
   Root = NULL;
   ExternCallingNode = NULL;
   CallsExternNode = NULL;

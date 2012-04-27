@@ -3,16 +3,14 @@
  * don't want <mbb> heavy-weighted. 
  */
 
-#include "common/InitializePasses.h"
-using namespace llvm;
-
 #include "common/mbb.h"
 #include "common/util.h"
 using namespace rcs;
 
-MicroBasicBlockBuilder::MicroBasicBlockBuilder(): ModulePass(ID) {
-	initializeMicroBasicBlockBuilderPass(*PassRegistry::getPassRegistry());
-}
+static RegisterPass<MicroBasicBlockBuilder> X("mbbb",
+		"micro basic block builder", false, false);
+
+MicroBasicBlockBuilder::MicroBasicBlockBuilder(): ModulePass(ID) {}
 
 MicroBasicBlock::iterator MicroBasicBlock::getFirstNonPHI() {
 	if (b == parent->begin())
@@ -58,6 +56,3 @@ mbb_iterator MicroBasicBlockBuilder::end(BasicBlock *bb) {
 }
 
 char MicroBasicBlockBuilder::ID = 0;
-
-INITIALIZE_PASS(MicroBasicBlockBuilder, "mbbb",
-		"micro basic block builder", false, false)

@@ -11,7 +11,6 @@ using namespace std;
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/Debug.h"
-#include "common/InitializePasses.h"
 using namespace llvm;
 
 #include "common/IDAssigner.h"

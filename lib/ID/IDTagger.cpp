@@ -8,23 +8,20 @@
 #include "llvm/ADT/Statistic.h"
 #include "llvm/Constants.h"
 #include "llvm/DerivedTypes.h"
-#include "common/InitializePasses.h"
 using namespace llvm;
 
 #include "common/IDTagger.h"
 #include "common/util.h"
 using namespace rcs;
 
-INITIALIZE_PASS(IDTagger, "tag-id",
-		"Assign each instruction a unique ID", false, false)
+static RegisterPass<IDTagger> X("tag-id",
+		"Assign each instruction a unique ID", false, false);
 
 STATISTIC(NumInstructions, "Number of instructions");
 
 char IDTagger::ID = 0;
 
-IDTagger::IDTagger(): ModulePass(ID) {
-	initializeIDTaggerPass(*PassRegistry::getPassRegistry());
-}
+IDTagger::IDTagger(): ModulePass(ID) {}
 
 void IDTagger::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesCFG();

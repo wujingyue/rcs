@@ -15,7 +15,6 @@
 using namespace std;
 
 #include "llvm/Support/raw_ostream.h"
-#include "common/InitializePasses.h"
 using namespace llvm;
 
 #include "common/IDAssigner.h"

@@ -16,24 +16,17 @@ using namespace llvm;
 #include "common/FPCallGraph.h"
 #include "common/util.h"
 #include "common/exec-once.h"
-#include "common/InitializePasses.h"
 using namespace rcs;
 
-INITIALIZE_PASS_BEGIN(ExecOnce, "exec-once",
-		"Identify instructions that can be executed only once", false, true)
-INITIALIZE_AG_DEPENDENCY(CallGraph)
-INITIALIZE_PASS_DEPENDENCY(FPCallGraph)
-INITIALIZE_PASS_END(ExecOnce, "exec-once",
-		"Identify instructions that can be executed only once", false, true)
+static RegisterPass<ExecOnce> X("exec-once",
+		"Identify instructions that can be executed only once", false, true);
 
 STATISTIC(NumInstructionsNotExecuted, "Number of instructions not executed");
 STATISTIC(NumInstructions, "Number of instructions");
 
 char ExecOnce::ID = 0;
 
-ExecOnce::ExecOnce(): ModulePass(ID) {
-	initializeExecOncePass(*PassRegistry::getPassRegistry());
-}
+ExecOnce::ExecOnce(): ModulePass(ID) {}
 
 void ExecOnce::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();

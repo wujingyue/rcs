@@ -2,16 +2,14 @@
  * Author: Jingyue
  */
 
-#include "common/InitializePasses.h"
-using namespace llvm;
-
 #include "common/IDManager.h"
 #include "common/util.h"
 using namespace rcs;
 
-INITIALIZE_PASS(IDManager, "manage-id",
-		"Find the instruction with a particular ID; Lookup the ID of an instruction",
-		false, true)
+static RegisterPass<IDManager> X("manage-id",
+		"Find the instruction with a particular ID; "
+    "Lookup the ID of an instruction",
+		false, true);
 
 char IDManager::ID = 0;
 
@@ -19,9 +17,7 @@ void IDManager::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 }
 
-IDManager::IDManager(): ModulePass(ID) {
-	initializeIDManagerPass(*PassRegistry::getPassRegistry());
-}
+IDManager::IDManager(): ModulePass(ID) {}
 
 bool IDManager::runOnModule(Module &M) {
 	IDMapping.clear();

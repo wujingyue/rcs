@@ -3,21 +3,18 @@
  */
 
 #include "llvm/Support/CFG.h"
-#include "common/InitializePasses.h"
 using namespace llvm;
 
 #include "common/intra-reach.h"
 #include "common/util.h"
 using namespace rcs;
 
-INITIALIZE_PASS(IntraReach, "intra-reach",
-		"Intra-procedural reachability analysis", false, true)
+static RegisterPass<IntraReach> X("intra-reach",
+		"Intra-procedural reachability analysis", false, true);
 
 char IntraReach::ID = 0;
 
-IntraReach::IntraReach(): FunctionPass(ID) {
-	initializeIntraReachPass(*PassRegistry::getPassRegistry());
-}
+IntraReach::IntraReach(): FunctionPass(ID) {}
 
 void IntraReach::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();

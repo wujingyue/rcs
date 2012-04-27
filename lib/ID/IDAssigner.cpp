@@ -9,15 +9,14 @@ using namespace std;
 
 #include "llvm/Support/CommandLine.h"
 #include "llvm/ADT/Statistic.h"
-#include "common/InitializePasses.h"
 using namespace llvm;
 
 #include "common/util.h"
 #include "common/IDAssigner.h"
 using namespace rcs;
 
-INITIALIZE_PASS(IDAssigner, "assign-id",
-		"Assign a unique ID to each instruction and each value", false, true)
+static RegisterPass<IDAssigner> X("assign-id",
+		"Assign a unique ID to each instruction and each value", false, true);
 
 static cl::opt<bool> PrintInsts("print-insts",
 		cl::desc("Print the ID-instruction mapping"));
@@ -35,9 +34,7 @@ void IDAssigner::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 }
 
-IDAssigner::IDAssigner(): ModulePass(ID) {
-	initializeIDAssignerPass(*PassRegistry::getPassRegistry());
-}
+IDAssigner::IDAssigner(): ModulePass(ID) {}
 
 bool IDAssigner::addValue(Value *V) {
 	if (ValueIDMapping.count(V))

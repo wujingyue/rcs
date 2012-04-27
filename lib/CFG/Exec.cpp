@@ -11,20 +11,14 @@ using namespace llvm;
 #include "common/FPCallGraph.h"
 #include "common/util.h"
 #include "common/reach.h"
-#include "common/InitializePasses.h"
 using namespace rcs;
 
 char Exec::ID = 0;
 
-INITIALIZE_PASS_BEGIN(Exec, "exec",
-		"Test whether a function may or must execute a landmark", false, true)
-INITIALIZE_PASS_DEPENDENCY(FPCallGraph)
-INITIALIZE_PASS_END(Exec, "exec",
-		"Test whether a function may or must execute a landmark", false, true)
+static RegisterPass<Exec> X("exec",
+		"Test whether a function may or must execute a landmark", false, true);
 
-Exec::Exec(): ModulePass(ID) {
-	initializeExecPass(*PassRegistry::getPassRegistry());
-}
+Exec::Exec(): ModulePass(ID) {}
 
 void Exec::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();

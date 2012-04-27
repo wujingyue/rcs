@@ -8,19 +8,12 @@ using namespace llvm;
 #include "common/icfg-builder.h"
 #include "common/FPCallGraph.h"
 #include "common/util.h"
-#include "common/InitializePasses.h"
 using namespace rcs;
 
-INITIALIZE_PASS_BEGIN(ICFGBuilder, "icfg",
-		"Build inter-procedural control flow graph", false, true)
-INITIALIZE_PASS_DEPENDENCY(MicroBasicBlockBuilder)
-INITIALIZE_PASS_DEPENDENCY(FPCallGraph)
-INITIALIZE_PASS_END(ICFGBuilder, "icfg",
-		"Build inter-procedural control flow graph", false, true)
+static RegisterPass<ICFGBuilder> X("icfg",
+		"Build inter-procedural control flow graph", false, true);
 
-ICFGBuilder::ICFGBuilder(): ModulePass(ID) {
-	initializeICFGBuilderPass(*PassRegistry::getPassRegistry());
-}
+ICFGBuilder::ICFGBuilder(): ModulePass(ID) {}
 
 void ICFGBuilder::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();

@@ -1,16 +1,10 @@
-#include "common/InitializePasses.h"
-using namespace llvm;
-
 #include "common/FPCallGraph.h"
 #include "common/identify-thread-funcs.h"
 #include "common/util.h"
 using namespace rcs;
 
-INITIALIZE_PASS_BEGIN(IdentifyThreadFuncs, "identify-thread-funcs",
-		"Identify thread functions", false, true)
-INITIALIZE_PASS_DEPENDENCY(FPCallGraph)
-INITIALIZE_PASS_END(IdentifyThreadFuncs, "identify-thread-funcs",
-		"Identify thread functions", false, true)
+static RegisterPass<IdentifyThreadFuncs> X("identify-thread-funcs",
+		"Identify thread functions", false, true);
 
 char IdentifyThreadFuncs::ID = 0;
 
@@ -19,9 +13,7 @@ void IdentifyThreadFuncs::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.addRequired<FPCallGraph>();
 }
 
-IdentifyThreadFuncs::IdentifyThreadFuncs(): ModulePass(ID) {
-	initializeIdentifyThreadFuncsPass(*PassRegistry::getPassRegistry());
-}
+IdentifyThreadFuncs::IdentifyThreadFuncs(): ModulePass(ID) {}
 
 bool IdentifyThreadFuncs::runOnModule(Module &M) {
 	/*

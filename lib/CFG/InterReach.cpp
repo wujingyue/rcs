@@ -17,7 +17,6 @@ using namespace std;
 #include "llvm/Support/CFG.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
-#include "common/InitializePasses.h"
 using namespace llvm;
 
 #include "common/FPCallGraph.h"
@@ -26,12 +25,8 @@ using namespace llvm;
 #include "common/IDAssigner.h"
 using namespace rcs;
 
-INITIALIZE_PASS_BEGIN(Reachability, "reach",
-		"Reachability Analysis", false, true)
-INITIALIZE_PASS_DEPENDENCY(IDAssigner)
-INITIALIZE_PASS_DEPENDENCY(FPCallGraph)
-INITIALIZE_PASS_END(Reachability, "reach",
-		"Reachability Analysis", false, true)
+static RegisterPass<Reachability> X("reach",
+		"Reachability Analysis", false, true);
 
 static cl::opt<string> InputFile("input",
 		cl::desc("The input file containing the start point and the cut"));
@@ -44,9 +39,7 @@ void Reachability::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.addRequired<FPCallGraph>();
 }
 
-Reachability::Reachability(): ModulePass(ID) {
-	initializeReachabilityPass(*PassRegistry::getPassRegistry());
-}
+Reachability::Reachability(): ModulePass(ID) {}
 
 bool Reachability::runOnModule(Module &M) {
 	// Topologically sort BBs in order to calculate par_postdomed more easily. 
