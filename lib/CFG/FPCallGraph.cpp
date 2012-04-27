@@ -90,20 +90,24 @@ void FPCallGraph::processCallSite(const CallSite &CS, const FuncSet &AllFuncs) {
   AliasAnalysis &AA = getAnalysis<AliasAnalysis>();
 
   if (Function *Callee = CS.getCalledFunction()) {
-    addCallEdge(CS, Callee);
-    const Instruction *Ins = CS.getInstruction();
-    if (is_pthread_create(Ins)) {
-      // Add edge: Ins => the thread function
-      Value *Target = get_pthread_create_callee(Ins);
-      if (Function *ThrFunc = dyn_cast<Function>(Target)) {
-        // pthread_create with a known function
-        addCallEdge(CS, ThrFunc);
-      } else {
-        // Ask AA which functions <target> may point to. 
-        for (FuncSet::const_iterator I = AllFuncs.begin();
-             I != AllFuncs.end(); ++I) {
-          if (AA.alias(Target, *I))
-            addCallEdge(CS, *I);
+    // Ignore calls to intrinsic functions. 
+    // CallGraph would throw assertion failures. 
+    if (!Callee->isIntrinsic()) {
+      addCallEdge(CS, Callee);
+      const Instruction *Ins = CS.getInstruction();
+      if (is_pthread_create(Ins)) {
+        // Add edge: Ins => the thread function
+        Value *Target = get_pthread_create_callee(Ins);
+        if (Function *ThrFunc = dyn_cast<Function>(Target)) {
+          // pthread_create with a known function
+          addCallEdge(CS, ThrFunc);
+        } else {
+          // Ask AA which functions <target> may point to. 
+          for (FuncSet::const_iterator I = AllFuncs.begin();
+               I != AllFuncs.end(); ++I) {
+            if (AA.alias(Target, *I))
+              addCallEdge(CS, *I);
+          }
         }
       }
     }

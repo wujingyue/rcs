@@ -18,7 +18,6 @@ struct RegisterCFGPasses {
 		initializeIntraReachPass(reg);
 		initializePartialICFGBuilderPass(reg);
 		initializeMicroBasicBlockBuilderPass(reg);
-		initializeFPInstrumenterPass(reg);
 	}
 };
 static RegisterCFGPasses X;

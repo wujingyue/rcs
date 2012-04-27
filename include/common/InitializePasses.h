@@ -22,8 +22,6 @@ void initializeIDTaggerPass(PassRegistry &);
 void initializeValueRenamingPass(PassRegistry &);
 void initializeMicroBasicBlockBuilderPass(PassRegistry &);
 void initializeSourceLocatorPass(PassRegistry &);
-void initializeFPInstrumenterPass(PassRegistry &);
-void initializeFPCollectorPass(PassRegistry &);
 #if 0
 void initializePointerAnalysisAnalysisGroup(PassRegistry &);
 void initializeBasicPointerAnalysisPass(PassRegistry &);
