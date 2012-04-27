@@ -1,6 +1,6 @@
 LEVEL = ..
 
-DIRS = ID CFG SourceLocator PointerAnalysis Andersens
+DIRS = ID CFG SourceLocator PointerAnalysis Andersens AATester
 
 OPTIONAL_DIRS = misc
 
