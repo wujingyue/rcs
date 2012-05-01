@@ -1,0 +1,11 @@
+*Release+Asserts/
+*Debug+Asserts/
+*Release/
+*Debug/
+autoconf/
+Makefile.common
+*.swp
+config.log
+config.status
+cscope.files
+cscope.out
