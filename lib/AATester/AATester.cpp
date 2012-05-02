@@ -1,5 +1,7 @@
 // Author: Jingyue
 
+#include "llvm/Argument.h"
+#include "llvm/Function.h"
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/raw_ostream.h"
@@ -15,13 +17,16 @@ struct AATester: public ModulePass {
   AATester(): ModulePass(ID) {}
   virtual bool runOnModule(Module &M);
   virtual void getAnalysisUsage(AnalysisUsage &AU) const;
+
+ private:
+  static void PrintValue(raw_ostream &O, const Value *V);
 };
 }
 
 static RegisterPass<AATester> X("test-aa",
                                 "Test alias analysis",
-                                false, // Is CFG Only? 
-                                true); // Is Analysis? 
+                                false, // Is CFG Only?
+                                true); // Is Analysis?
 
 static cl::opt<bool> ValueID("value",
                              cl::desc("Use value IDs instead of "
@@ -64,7 +69,24 @@ bool AATester::runOnModule(Module &M) {
   }
   assert(V1 && V2);
 
-  errs() << *V1 << "\n" << *V2 << "\n";
+  PrintValue(errs(), V1);
+  errs() << "\n";
+  PrintValue(errs(), V2);
+  errs() << "\n";
   errs() << AA.alias(V1, V2) << "\n";
   return false;
+}
+
+void AATester::PrintValue(raw_ostream &O, const Value *V) {
+  if (isa<Function>(V)) {
+    O << V->getName();
+  } else if (const Argument *Arg = dyn_cast<Argument>(V)) {
+    O << Arg->getParent()->getName() << ":  " << *Arg;
+  } else if (const Instruction *Ins = dyn_cast<Instruction>(V)) {
+    O << Ins->getParent()->getParent()->getName();
+    O << "." << Ins->getParent()->getName() << ":";
+    O << *Ins;
+  } else {
+    O << *V;
+  }
 }
