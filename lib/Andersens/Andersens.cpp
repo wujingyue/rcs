@@ -35,7 +35,7 @@
 // equivalences.  Pointer equivalences are those pointers that will have the
 // same points-to sets, and location equivalences are those variables that
 // always appear together in points-to sets.  It also includes an offline
-// cycle detection algorithm that allows cycles to be collapsed sooner 
+// cycle detection algorithm that allows cycles to be collapsed sooner
 // during solving.
 //
 // The inclusion constraint solving phase iteratively propagates the inclusion
@@ -254,7 +254,7 @@ class Andersens: public ModulePass, public AliasAnalysis, public rcs::PointerAna
     unsigned Timestamp;
 
     explicit Node(bool direct = true) :
-        Val(0), Edges(0), PointsTo(0), OldPointsTo(0), 
+        Val(0), Edges(0), PointsTo(0), OldPointsTo(0),
         PointerEquivLabel(0), LocationEquivLabel(0), PredEdges(0),
         ImplicitPredEdges(0), PointedToBy(0), NumInEdges(0),
         StoredInHash(false), Direct(direct), AddressTaken(false),
@@ -389,7 +389,7 @@ class Andersens: public ModulePass, public AliasAnalysis, public rcs::PointerAna
   // Map from Graph Node to Deleted from graph.
   std::vector<bool> Node2Deleted;
   // Same as Node Maps, but implemented as std::map because it is faster to
-  // clear 
+  // clear
   std::map<unsigned, unsigned> Tarjan2DFS;
   std::map<unsigned, bool> Tarjan2Deleted;
   // Current DFS number
@@ -441,11 +441,13 @@ class Andersens: public ModulePass, public AliasAnalysis, public rcs::PointerAna
   virtual void *getAdjustedAnalysisPointer(AnalysisID PI) {
     if (PI == &AliasAnalysis::ID)
       return (AliasAnalysis *)this;
+    // Added by Jingyue
     if (PI == &PointerAnalysis::ID)
       return (PointerAnalysis *)this;
     return this;
   }
 
+  // PointerAnalysis interface
   bool getPointees(const Value *Pointer, rcs::ValueList &Pointees) {
     assert(Pointer);
     Node *N = &GraphNodes[FindNode(getNode(const_cast<Value *>(Pointer)))];
@@ -461,10 +463,11 @@ class Andersens: public ModulePass, public AliasAnalysis, public rcs::PointerAna
     return true;
   }
 
+  // PointerAnalysis interface.
   void getAllPointers(rcs::ValueList &Pointers) {
     Pointers.clear();
     for (size_t i = 0; i < GraphNodes.size(); ++i) {
-      // GraphNodes contains null objects. 
+      // GraphNodes contains null objects.
       if (Value *V = GraphNodes[i].getValue())
         if (V->getType()->isPointerTy())
           Pointers.push_back(V);
@@ -519,7 +522,7 @@ class Andersens: public ModulePass, public AliasAnalysis, public rcs::PointerAna
   virtual ModRefResult getModRefInfo(ImmutableCallSite CS1,
                                      ImmutableCallSite CS2);
   void getMustAliases(Value *P, std::vector<Value*> &RetVals);
-  // Do not use it. 
+  // Do not use it.
   bool pointsToConstantMemory(const Location &Loc, bool OrLocal = false);
 
   virtual void deleteValue(Value *V) {
@@ -733,7 +736,7 @@ void Andersens::getMustAliases(Value *P, std::vector<Value*> &RetVals) {
         RetVals.push_back(Constant::getNullValue(P->getType()));
     }
   }
-  // Removed by Jingyue. Other AliasAnalyses are not implementing this anyway. 
+  // Removed by Jingyue. Other AliasAnalyses are not implementing this anyway.
   // AliasAnalysis::getMustAliases(P, RetVals);
 }
 
@@ -800,6 +803,8 @@ void Andersens::IdentifyObjects(Module &M) {
     // The function itself is a memory object.
     unsigned First = NumObjects;
     ValueNodes[F] = NumObjects++;
+    // Added by Jingyue
+    ObjectNodes[F] = NumObjects++;
     if (isa<PointerType>(F->getFunctionType()->getReturnType()))
       ReturnNodes[F] = NumObjects++;
     if (F->getFunctionType()->isVarArg())
@@ -987,7 +992,7 @@ bool Andersens::AddConstraintsForExternalCall(CallSite CS, Function *F) {
       F->getName() == "memmove") {
 
     const FunctionType *FTy = F->getFunctionType();
-    if (FTy->getNumParams() > 1 && 
+    if (FTy->getNumParams() > 1 &&
         isa<PointerType>(FTy->getParamType(0)) &&
         isa<PointerType>(FTy->getParamType(1))) {
 
@@ -1013,7 +1018,7 @@ bool Andersens::AddConstraintsForExternalCall(CallSite CS, Function *F) {
       F->getName() == "strrchr" || F->getName() == "strstr" ||
       F->getName() == "strtok") {
     const FunctionType *FTy = F->getFunctionType();
-    if (FTy->getNumParams() > 0 && 
+    if (FTy->getNumParams() > 0 &&
         isa<PointerType>(FTy->getParamType(0))) {
       Constraints.push_back(Constraint(Constraint::Copy,
                                        getNode(CS.getInstruction()),
@@ -1068,7 +1073,7 @@ bool Andersens::AnalyzeUsesOfFunction(Value *V) {
     } else if (ICmpInst *ICI = dyn_cast<ICmpInst>(*UI)) {
       if (!isa<ConstantPointerNull>(ICI->getOperand(1)))
         return true;  // Allow comparison against null.
-      // Removed by Jingyue. Does not exist in LLVM 2.7. 
+      // Removed by Jingyue. Does not exist in LLVM 2.7.
       // } else if (isa<FreeInst>(*UI)) {
       //   return false;
 } else {
@@ -1110,6 +1115,15 @@ void Andersens::CollectConstraints(Module &M) {
       Constraints.push_back(Constraint(Constraint::Copy, ObjectIndex,
                                        UniversalSet));
     }
+  }
+
+  // Added by Jingyue
+  for (Module::iterator F = M.begin(); F != M.end(); ++F) {
+    unsigned ObjectIndex = getObject(F);
+    Node *Object = &GraphNodes[ObjectIndex];
+    Object->setValue(F);
+    Constraints.push_back(Constraint(Constraint::AddressOf, getNodeValue(*F),
+                                     ObjectIndex));
   }
 
   for (Module::iterator F = M.begin(), E = M.end(); F != E; ++F) {
@@ -1188,7 +1202,7 @@ void Andersens::visitInstruction(Instruction &I) {
     case Instruction::Switch:
     case Instruction::Unwind:
     case Instruction::Unreachable:
-      // Removed by Jingyue. Does not exist in LLVM 2.7. 
+      // Removed by Jingyue. Does not exist in LLVM 2.7.
       // case Instruction::Free:
     case Instruction::ICmp:
     case Instruction::FCmp:
@@ -1337,10 +1351,10 @@ void Andersens::AddConstraintsForCall(CallSite CS, Function *F) {
   if (F) {
     // Direct Call
     Function::arg_iterator AI = F->arg_begin(), AE = F->arg_end();
-    for (; AI != AE && ArgI != ArgE; ++AI, ++ArgI) 
+    for (; AI != AE && ArgI != ArgE; ++AI, ++ArgI)
     {
 #if !FULL_UNIVERSAL
-      if (external && isa<PointerType>((*ArgI)->getType())) 
+      if (external && isa<PointerType>((*ArgI)->getType()))
       {
         // Add constraint that ArgI can now point to anything due to
         // escaping, as can everything it points to. The second portion of
@@ -2136,7 +2150,7 @@ void Andersens::HCD() {
   DEBUG(errs() << "HCD complete.\n");
 }
 
-// Component of HCD: 
+// Component of HCD:
 // Use Nuutila's variant of Tarjan's algorithm to detect
 // Strongly-Connected Components (SCCs). For non-trivial SCCs
 // containing ref nodes, insert the appropriate information in SDT.
@@ -2167,7 +2181,7 @@ void Andersens::Search(unsigned Node) {
 
   // This node is the root of a SCC, so process it.
   //
-  // If the SCC is "non-trivial" (not a singleton) and contains a reference 
+  // If the SCC is "non-trivial" (not a singleton) and contains a reference
   // node, we place this SCC into SDT.  We unite the nodes in any case.
   if (!SCCStack.empty() && Node2DFS[SCCStack.top()] >= MyDFS) {
     SparseBitVector<> SCC;
@@ -2375,7 +2389,7 @@ bool Andersens::QueryNode(unsigned Node) {
   GraphNodes[Node].Edges->intersectWithComplement(ToErase);
   GraphNodes[Node].Edges |= NewEdges;
 
-  // If this node is a root of a non-trivial SCC, place it on our 
+  // If this node is a root of a non-trivial SCC, place it on our
   // worklist to be processed.
   if (OurDFS == Tarjan2DFS[Node]) {
     while (!SCCStack.empty() && Tarjan2DFS[SCCStack.top()] >= OurDFS) {
@@ -2796,7 +2810,7 @@ unsigned Andersens::FindNode(unsigned NodeIndex) {
     return (N->NodeRep = FindNode(N->NodeRep));
 }
 
-// Find the index into GraphNodes of the node representing Node, 
+// Find the index into GraphNodes of the node representing Node,
 // don't perform path compression along the way (for Print)
 unsigned Andersens::FindNode(unsigned NodeIndex) const {
   assert (NodeIndex < GraphNodes.size()
