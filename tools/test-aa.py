@@ -37,6 +37,7 @@ if __name__ == '__main__':
     if args.aa == 'ds-aa':
         cmd = load_plugin(cmd, 'LLVMDataStructure')
     elif args.aa == 'anders-aa':
+        cmd = load_plugin(cmd, 'PointerAnalysis')
         cmd = load_plugin(cmd, 'Andersens')
     elif args.aa == 'bc2bdd-aa':
         if not os.path.exists('bc2bdd.conf'):
@@ -54,6 +55,10 @@ if __name__ == '__main__':
     cmd = ' '.join((cmd, '-id1', str(args.id1)))
     cmd = ' '.join((cmd, '-id2', str(args.id2)))
     cmd = ' '.join((cmd, '-disable-output', '<', args.bc))
+
+    sys.stderr.write('\33[0;34m')
+    print >> sys.stderr, cmd
+    sys.stderr.write('\33[m')
 
     ret = os.system(cmd)
     sys.exit(ret)
