@@ -73,6 +73,7 @@ bool AATester::runOnModule(Module &M) {
   errs() << "\n";
   PrintValue(errs(), V2);
   errs() << "\n";
+
   errs() << AA.alias(V1, V2) << "\n";
   return false;
 }
