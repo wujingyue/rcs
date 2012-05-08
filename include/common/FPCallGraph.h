@@ -1,21 +1,20 @@
 // Author: Jingyue
 //
 // Fit into the CallGraph interface, so that we can run graph algorithms
-// (e.g. SCC) on it. 
+// (e.g. SCC) on it.
 
 #ifndef __RCS_FP_CALLGRAPH_H
 #define __RCS_FP_CALLGRAPH_H
 
 #include <vector>
-using namespace std;
 
 #include "llvm/Module.h"
 #include "llvm/Analysis/CallGraph.h"
 #include "llvm/ADT/DenseMap.h"
-using namespace llvm;
 
 #include "common/typedefs.h"
-using namespace rcs;
+
+using namespace llvm;
 
 namespace rcs {
 struct FPCallGraph: public ModulePass, public CallGraph {
@@ -24,9 +23,8 @@ struct FPCallGraph: public ModulePass, public CallGraph {
 
   static char ID;
 
-  FPCallGraph();
-
   // Interfaces of ModulePass
+  FPCallGraph();
   virtual void getAnalysisUsage(AnalysisUsage &AU) const;
   virtual bool runOnModule(Module &M);
   virtual void print(raw_ostream &O, const Module *M) const;
@@ -39,7 +37,7 @@ struct FPCallGraph: public ModulePass, public CallGraph {
   // Interfaces of CallGraph
   const CallGraphNode *getRoot() const { return Root; }
   CallGraphNode *getRoot() { return Root; }
-  // SCC algorithm starts from this external calling node. 
+  // SCC algorithm starts from this external calling node.
   CallGraphNode *getExternalCallingNode() const {
     return ExternCallingNode;
   }
@@ -53,7 +51,9 @@ struct FPCallGraph: public ModulePass, public CallGraph {
   void addCallEdge(const CallSite &CS, Function *Callee);
 
  private:
-  template <typename T> static void MakeUnique(vector<T> &V);
+  template <typename T>
+  static void MakeUnique(std::vector<T> &V);
+
   void processCallSite(const CallSite &CS, const FuncSet &AllFuncs);
   void simplifyCallGraph();
 

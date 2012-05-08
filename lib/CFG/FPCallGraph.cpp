@@ -1,20 +1,21 @@
 // Author: Jingyue
-// 
-// A call-graph builder considering function pointers. 
-// The targets of function pointers are identified by alias analysis. 
-// Users may specify which alias analysis she wants to run this pass with. 
+//
+// A call-graph builder considering function pointers.
+// The targets of function pointers are identified by alias analysis.
+// Users may specify which alias analysis she wants to run this pass with.
 
 #include <cstdio>
 #include <fstream>
-using namespace std;
 
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Analysis/CallGraph.h"
 #include "llvm/Analysis/AliasAnalysis.h"
-using namespace llvm;
 
 #include "common/FPCallGraph.h"
 #include "common/util.h"
+
+using namespace std;
+using namespace llvm;
 using namespace rcs;
 
 static RegisterPass<FPCallGraph> X("fpcg",
@@ -42,7 +43,7 @@ FPCallGraph::FPCallGraph(): ModulePass(ID) {
 }
 
 void FPCallGraph::destroy() {
-  // <CallsExternNode> is not in the function map, delete it explicitly. 
+  // <CallsExternNode> is not in the function map, delete it explicitly.
   delete CallsExternNode;
   CallsExternNode = NULL;
   CallGraph::destroy();
@@ -53,7 +54,7 @@ void FPCallGraph::addCallEdge(const CallSite &Site, Function *Callee) {
   assert(Ins);
   SiteToFuncs[Ins].push_back(Callee);
   FuncToSites[Callee].push_back(Ins);
-  // Update CallGraph as well. 
+  // Update CallGraph as well.
   CallGraphNode *Node = getOrInsertFunction(Ins->getParent()->getParent());
   Node->addCalledFunction(Site, getOrInsertFunction(Callee));
 }
@@ -61,7 +62,7 @@ void FPCallGraph::addCallEdge(const CallSite &Site, Function *Callee) {
 template <class T>
 void FPCallGraph::MakeUnique(vector<T> &V) {
   sort(V.begin(), V.end());
-  V.resize(unique(V.begin(), V.end()) - V.begin());
+  V.erase(unique(V.begin(), V.end()), V.end());
 }
 
 FuncList FPCallGraph::getCalledFunctions(
@@ -84,8 +85,8 @@ void FPCallGraph::processCallSite(const CallSite &CS, const FuncSet &AllFuncs) {
   AliasAnalysis &AA = getAnalysis<AliasAnalysis>();
 
   if (Function *Callee = CS.getCalledFunction()) {
-    // Ignore calls to intrinsic functions. 
-    // CallGraph would throw assertion failures. 
+    // Ignore calls to intrinsic functions.
+    // CallGraph would throw assertion failures.
     if (!Callee->isIntrinsic()) {
       addCallEdge(CS, Callee);
       const Instruction *Ins = CS.getInstruction();
@@ -96,7 +97,7 @@ void FPCallGraph::processCallSite(const CallSite &CS, const FuncSet &AllFuncs) {
           // pthread_create with a known function
           addCallEdge(CS, ThrFunc);
         } else {
-          // Ask AA which functions <target> may point to. 
+          // Ask AA which functions <target> may point to.
           for (FuncSet::const_iterator I = AllFuncs.begin();
                I != AllFuncs.end(); ++I) {
             if (AA.alias(Target, *I))
@@ -108,7 +109,7 @@ void FPCallGraph::processCallSite(const CallSite &CS, const FuncSet &AllFuncs) {
   } else {
     Value *FP = CS.getCalledValue();
     assert(FP && "Cannot find the function pointer");
-    // Ask AA which functions <fp> may point to. 
+    // Ask AA which functions <fp> may point to.
     for (FuncSet::const_iterator I = AllFuncs.begin();
          I != AllFuncs.end(); ++I) {
       if (AA.alias(FP, *I))
@@ -122,19 +123,19 @@ bool FPCallGraph::runOnModule(Module &M) {
   CallGraph::initialize(M);
 
   // Use getOrInsertFunction(NULL) so that
-  // ExternCallingNode->getFunction() returns NULL. 
+  // ExternCallingNode->getFunction() returns NULL.
   ExternCallingNode = getOrInsertFunction(NULL);
   CallsExternNode = new CallGraphNode(NULL);
 
-  // Every function need to have a corresponding CallGraphNode. 
+  // Every function need to have a corresponding CallGraphNode.
   for (Module::iterator F = M.begin(); F != M.end(); ++F)
     getOrInsertFunction(F);
 
   /*
-   * Get the set of all defined functions. 
-   * Will be used as a candidate set for point-to analysis. 
+   * Get the set of all defined functions.
+   * Will be used as a candidate set for point-to analysis.
    * FIXME: Currently we have to skip external functions, otherwise
-   * bc2bdd would fail. Don't ask me why. 
+   * bc2bdd would fail. Don't ask me why.
    */
   FuncSet AllFuncs;
   for (Module::iterator F = M.begin(); F != M.end(); ++F) {
@@ -150,7 +151,7 @@ bool FPCallGraph::runOnModule(Module &M) {
       Root = getOrInsertFunction(F);
     }
   }
-  // No root if no main function or more than one main functions. 
+  // No root if no main function or more than one main functions.
   if (NumMains != 1)
     Root = ExternCallingNode;
 
@@ -172,7 +173,7 @@ bool FPCallGraph::runOnModule(Module &M) {
       getOrInsertFunction(F)->addCalledFunction(CallSite(), CallsExternNode);
   }
 
-  // Build the call graph. 
+  // Build the call graph.
   SiteToFuncs.clear();
   FuncToSites.clear();
   for (Module::iterator F = M.begin(); F != M.end(); ++F) {
@@ -185,14 +186,14 @@ bool FPCallGraph::runOnModule(Module &M) {
     }
   }
 
-  // Simplify the call graph. 
+  // Simplify the call graph.
   simplifyCallGraph();
 
   return false;
 }
 
 void FPCallGraph::simplifyCallGraph() {
-  // Remove duplicated items in each vector. 
+  // Remove duplicated items in each vector.
   for (SiteToFuncsMapTy::iterator I = SiteToFuncs.begin();
        I != SiteToFuncs.end(); ++I) {
     MakeUnique(I->second);
@@ -206,7 +207,7 @@ void FPCallGraph::simplifyCallGraph() {
 void FPCallGraph::print(llvm::raw_ostream &O, const Module *M) const {
   O << "Caller - Callee:\n";
   for (Module::const_iterator F = M->begin(); F != M->end(); ++F) {
-    // All called functions inside <F>. 
+    // All called functions inside <F>.
     FuncList AllCallees;
     for (Function::const_iterator BB = F->begin(); BB != F->end(); ++BB) {
       for (BasicBlock::const_iterator Ins = BB->begin();
