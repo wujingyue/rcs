@@ -18,8 +18,8 @@
 #include "llvm/Pass.h"
 using namespace llvm;
 
-#include "common/icfg.h"
-#include "common/mbb.h"
+#include "common/ICFG.h"
+#include "common/MBB.h"
 using namespace rcs;
 
 namespace rcs {

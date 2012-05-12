@@ -5,7 +5,7 @@
 #include "llvm/Support/CFG.h"
 using namespace llvm;
 
-#include "common/intra-reach.h"
+#include "common/IntraReach.h"
 #include "common/util.h"
 using namespace rcs;
 

@@ -5,7 +5,7 @@
 #include "llvm/Support/raw_ostream.h"
 using namespace llvm;
 
-#include "common/icfg.h"
+#include "common/ICFG.h"
 using namespace rcs;
 
 ICFGNode *ICFG::getOrInsertMBB(const MicroBasicBlock *mbb) {

@@ -5,7 +5,7 @@
 #include "llvm/Support/CFG.h"
 using namespace llvm;
 
-#include "common/icfg-builder.h"
+#include "common/ICFGBuilder.h"
 #include "common/FPCallGraph.h"
 #include "common/util.h"
 using namespace rcs;

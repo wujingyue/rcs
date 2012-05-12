@@ -21,7 +21,7 @@ using namespace llvm;
 
 #include "common/FPCallGraph.h"
 #include "common/util.h"
-#include "common/inter-reach.h"
+#include "common/InterReach.h"
 #include "common/IDAssigner.h"
 using namespace rcs;
 

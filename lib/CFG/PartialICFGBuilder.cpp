@@ -6,8 +6,8 @@
 #include "llvm/Support/CommandLine.h"
 using namespace llvm;
 
-#include "common/partial-icfg-builder.h"
-#include "common/exec-once.h"
+#include "common/PartialICFGBuilder.h"
+#include "common/ExecOnce.h"
 #include "common/FPCallGraph.h"
 #include "common/util.h"
 using namespace rcs;

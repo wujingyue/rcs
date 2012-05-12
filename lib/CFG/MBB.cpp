@@ -3,7 +3,7 @@
  * don't want <mbb> heavy-weighted. 
  */
 
-#include "common/mbb.h"
+#include "common/MBB.h"
 #include "common/util.h"
 using namespace rcs;
 

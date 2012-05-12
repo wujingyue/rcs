@@ -30,4 +30,3 @@ static inline void log(int level, const char *format, ...) {
 }
 
 #endif
-

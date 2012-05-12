@@ -15,7 +15,7 @@ using namespace llvm;
 
 #include "common/FPCallGraph.h"
 #include "common/util.h"
-#include "common/exec-once.h"
+#include "common/ExecOnce.h"
 using namespace rcs;
 
 static RegisterPass<ExecOnce> X("exec-once",

@@ -1,5 +1,5 @@
 #include "common/FPCallGraph.h"
-#include "common/identify-thread-funcs.h"
+#include "common/IdentifyThreadFuncs.h"
 #include "common/util.h"
 using namespace rcs;
 
