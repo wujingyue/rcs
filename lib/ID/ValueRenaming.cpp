@@ -45,6 +45,8 @@ ValueRenaming::ValueRenaming(): ModulePass(ID) {}
 bool ValueRenaming::should_rename(const Value *V) {
 	if (isa<Function>(V))
 		return false;
+  if (isa<InlineAsm>(V))
+    return false;
 	if (isa<IntegerType>(V->getType()) || isa<PointerType>(V->getType()))
 		return true;
 	return false;
