@@ -5,9 +5,10 @@
 import argparse
 import os
 import sys
+import string
 
 def load_plugin(cmd, plugin):
-    return ' '.join((cmd, '-load $LLVM_ROOT/install/lib/' + plugin + '.so'))
+    return string.join((cmd, '-load $LLVM_ROOT/install/lib/' + plugin + '.so'))
 
 def get_base_cmd():
     base_cmd = 'opt'
@@ -36,6 +37,7 @@ if __name__ == '__main__':
     # TODO: Should be specified in a configuration file.
     if args.aa == 'ds-aa':
         cmd = load_plugin(cmd, 'LLVMDataStructure')
+        # cmd = string.join((cmd, '-debug'))
     elif args.aa == 'anders-aa':
         cmd = load_plugin(cmd, 'PointerAnalysis')
         cmd = load_plugin(cmd, 'Andersens')
@@ -48,13 +50,13 @@ if __name__ == '__main__':
             sys.exit(1)
         cmd = load_plugin(cmd, 'bc2bdd')
 
-    cmd = ' '.join((cmd, '-' + args.aa))
-    cmd = ' '.join((cmd, '-test-aa'))
+    cmd = string.join((cmd, '-' + args.aa))
+    cmd = string.join((cmd, '-test-aa'))
     if not args.ins:
-        cmd = ' '.join((cmd, '-value'))
-    cmd = ' '.join((cmd, '-id1', str(args.id1)))
-    cmd = ' '.join((cmd, '-id2', str(args.id2)))
-    cmd = ' '.join((cmd, '-disable-output', '<', args.bc))
+        cmd = string.join((cmd, '-value'))
+    cmd = string.join((cmd, '-id1', str(args.id1)))
+    cmd = string.join((cmd, '-id2', str(args.id2)))
+    cmd = string.join((cmd, '-disable-output', '<', args.bc))
 
     sys.stderr.write('\33[0;34m')
     print >> sys.stderr, cmd
