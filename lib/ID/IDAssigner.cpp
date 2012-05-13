@@ -212,14 +212,18 @@ void IDAssigner::printValues(raw_ostream &O, const Module *M) const {
 }
 
 void IDAssigner::printValue(raw_ostream &O, const Value *V) const {
-	if (const Function *F = dyn_cast<Function>(V))
+	if (const Function *F = dyn_cast<Function>(V)) {
 		O << F->getName();
-	else if (const BasicBlock *BB = dyn_cast<BasicBlock>(V))
+  } else if (const BasicBlock *BB = dyn_cast<BasicBlock>(V)) {
 		O << BB->getParent()->getName() << "." << BB->getName();
-	else if (const Instruction *I = dyn_cast<Instruction>(V))
+  } else if (const Instruction *I = dyn_cast<Instruction>(V)) {
+    // O << *I each time is pretty slow. 
+    // Each time, LLVM has to construct an AssemblyWriter which takes time.
+    // O << I->getParent()->getParent()->getName() << " " << I->getName();
 		O << I->getParent()->getParent()->getName() << " " << *I;
-	else
-		V->print(O);
+  } else {
+    O << *V;
+  }
 }
 
 void IDAssigner::print(raw_ostream &O, const Module *M) const {
