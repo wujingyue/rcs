@@ -3,14 +3,18 @@
  */
 
 #include "llvm/Support/CFG.h"
-using namespace llvm;
 
 #include "common/IntraReach.h"
 #include "common/util.h"
+
+using namespace llvm;
 using namespace rcs;
 
-static RegisterPass<IntraReach> X("intra-reach",
-		"Intra-procedural reachability analysis", false, true);
+static RegisterPass<IntraReach> X(
+    "intra-reach",
+		"Intra-procedural reachability analysis",
+    false,
+    true);
 
 char IntraReach::ID = 0;
 
