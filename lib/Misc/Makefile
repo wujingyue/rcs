@@ -1,6 +1,6 @@
 LEVEL = ../..
 
-LIBRARYNAME = misc
+LIBRARYNAME = RCSMisc
 
 LOADABLE_MODULE = 1
 

@@ -1,8 +1,7 @@
 LEVEL = ../..
 
-LIBRARYNAME = SourceLocator
+LIBRARYNAME = RCSSourceLocator
 
-LOADABLE_MODULE = 1
-BUILD_ARCHIVE = 1
+LODABLE_MODULE = 1
 
 include $(LEVEL)/Makefile.common

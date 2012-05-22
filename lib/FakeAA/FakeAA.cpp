@@ -1,4 +1,7 @@
+// Author: Jingyue
+
 #include "llvm/Pass.h"
+#include "llvm/Support/raw_ostream.h"
 #include "llvm/Analysis/AliasAnalysis.h"
 using namespace llvm;
 
@@ -21,6 +24,7 @@ static RegisterAnalysisGroup<AliasAnalysis> Y(X);
 char FakeAA::ID = 0;
 
 bool FakeAA::runOnModule(Module &M) {
+  errs() << "FakeAA::runOnModule\n";
   InitializeAliasAnalysis(this);
   return false;
 }

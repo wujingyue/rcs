@@ -1,7 +1,7 @@
 LEVEL = ..
 
-DIRS = ID CFG SourceLocator PointerAnalysis Andersens AATester
+PARALLEL_DIRS = ID CFG SourceLocator PointerAnalysis Andersens AATester
 
-OPTIONAL_DIRS = misc
+OPTIONAL_DIRS = Misc
 
 include $(LEVEL)/Makefile.common
