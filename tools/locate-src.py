@@ -14,8 +14,8 @@ if __name__ == '__main__':
 
     llvm_prefix = os.popen('llvm-config --prefix').readline().strip()
     cmd = 'opt '
-    cmd += '-load ' + llvm_prefix + '/lib/ID.so '
-    cmd += '-load ' + llvm_prefix + '/lib/SourceLocator.so '
+    cmd += '-load ' + llvm_prefix + '/lib/RCSID.so '
+    cmd += '-load ' + llvm_prefix + '/lib/RCSSourceLocator.so '
     cmd += '-locate-src '
     cmd += '-input ' + args.loc + ' '
     cmd += '-disable-output '

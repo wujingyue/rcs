@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
     llvm_prefix = os.popen('llvm-config --prefix').readline().strip()
     cmd = 'opt '
-    cmd += '-load ' + llvm_prefix + '/lib/ID.so '
+    cmd += '-load ' + llvm_prefix + '/lib/RCSID.so '
     cmd += '-assign-id '
     if args.id == 'iid':
         cmd += '-print-insts '

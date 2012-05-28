@@ -14,8 +14,8 @@ def load_plugin(cmd, plugin):
 
 def get_base_cmd():
     base_cmd = 'opt'
-    base_cmd = load_plugin(base_cmd, 'ID')
-    base_cmd = load_plugin(base_cmd, 'AATester')
+    base_cmd = load_plugin(base_cmd, 'RCSID')
+    base_cmd = load_plugin(base_cmd, 'RCSAATester')
     return base_cmd
 
 if __name__ == '__main__':
@@ -41,8 +41,8 @@ if __name__ == '__main__':
         cmd = load_plugin(cmd, 'LLVMDataStructure')
         # cmd = string.join((cmd, '-debug'))
     elif args.aa == 'anders-aa':
-        cmd = load_plugin(cmd, 'PointerAnalysis')
-        cmd = load_plugin(cmd, 'Andersens')
+        cmd = load_plugin(cmd, 'RCSPointerAnalysis')
+        cmd = load_plugin(cmd, 'RCSAndersens')
     elif args.aa == 'bc2bdd-aa':
         if not os.path.exists('bc2bdd.conf'):
             sys.stderr.write('\033[1;31m')
