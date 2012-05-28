@@ -8,7 +8,9 @@ import sys
 import string
 
 def load_plugin(cmd, plugin):
-    return string.join((cmd, '-load $LLVM_ROOT/install/lib/' + plugin + '.so'))
+    llvm_prefix = os.popen('llvm-config --prefix').readline().strip()
+    return string.join((cmd, '-load ' + llvm_prefix + '/install/lib/' + \
+            plugin + '.so'))
 
 def get_base_cmd():
     base_cmd = 'opt'
