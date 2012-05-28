@@ -1,6 +1,6 @@
 LEVEL = .
 
-DIRS = lib
+DIRS = lib tools
 EXTRA_DIST = include
 
 include $(LEVEL)/Makefile.common
