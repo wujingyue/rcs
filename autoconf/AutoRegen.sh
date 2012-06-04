@@ -13,6 +13,12 @@ while true ; do
 	read -p "Enter full path to LLVM source:" REPLY
 	if test -d "$REPLY/autoconf/m4" ; then
 		llvm_m4="$REPLY/autoconf/m4"
+		read -p "Enter full path to LLVM objects (empty for same as source):" REPLY
+		if test -d "$REPLY" ; then
+			llvm_obj_root="$REPLY"
+		else
+			llvm_obj_root="$llvm_src_root"
+		fi
 		break
 	fi
 done

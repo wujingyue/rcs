@@ -20,11 +20,11 @@ AC_CONFIG_SRCDIR(["Makefile.common.in"])
 
 dnl Configure a common Makefile
 AC_CONFIG_FILES(Makefile.common)
+AC_CONFIG_FILES(tools/rcs_config.py.in)
 
 dnl Configure project makefiles
 dnl List every Makefile that exists within your source tree
 AC_CONFIG_MAKEFILE(Makefile)
-AC_CONFIG_MAKEFILE(lib/Makefile)
 
 dnl **************************************************************************
 dnl * Determine which system we are building on
