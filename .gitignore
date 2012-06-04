@@ -10,3 +10,4 @@ config.log
 config.status
 cscope.files
 cscope.out
+tools/rcs_config.py.in
