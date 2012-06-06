@@ -13,9 +13,9 @@ using namespace std;
 #include "llvm/Support/CFG.h"
 using namespace llvm;
 
-#include "common/FPCallGraph.h"
-#include "common/util.h"
-#include "common/ExecOnce.h"
+#include "rcs/FPCallGraph.h"
+#include "rcs/util.h"
+#include "rcs/ExecOnce.h"
 using namespace rcs;
 
 static RegisterPass<ExecOnce> X("exec-once",

@@ -19,10 +19,10 @@ using namespace std;
 #include "llvm/Support/Debug.h"
 using namespace llvm;
 
-#include "common/FPCallGraph.h"
-#include "common/util.h"
-#include "common/InterReach.h"
-#include "common/IDAssigner.h"
+#include "rcs/FPCallGraph.h"
+#include "rcs/util.h"
+#include "rcs/InterReach.h"
+#include "rcs/IDAssigner.h"
 using namespace rcs;
 
 static RegisterPass<Reachability> X("reach",

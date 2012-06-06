@@ -5,9 +5,9 @@
 #include "llvm/Support/CFG.h"
 using namespace llvm;
 
-#include "common/ICFGBuilder.h"
-#include "common/FPCallGraph.h"
-#include "common/util.h"
+#include "rcs/ICFGBuilder.h"
+#include "rcs/FPCallGraph.h"
+#include "rcs/util.h"
 using namespace rcs;
 
 static RegisterPass<ICFGBuilder> X("icfg",

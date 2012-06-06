@@ -7,10 +7,10 @@
 #include "llvm/ADT/SCCIterator.h"
 using namespace llvm;
 
-#include "common/Exec.h"
-#include "common/FPCallGraph.h"
-#include "common/util.h"
-#include "common/Reach.h"
+#include "rcs/Exec.h"
+#include "rcs/FPCallGraph.h"
+#include "rcs/util.h"
+#include "rcs/Reach.h"
 using namespace rcs;
 
 char Exec::ID = 0;

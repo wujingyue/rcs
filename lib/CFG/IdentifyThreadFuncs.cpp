@@ -1,6 +1,6 @@
-#include "common/FPCallGraph.h"
-#include "common/IdentifyThreadFuncs.h"
-#include "common/util.h"
+#include "rcs/FPCallGraph.h"
+#include "rcs/IdentifyThreadFuncs.h"
+#include "rcs/util.h"
 using namespace rcs;
 
 static RegisterPass<IdentifyThreadFuncs> X("identify-thread-funcs",

@@ -1,7 +1,7 @@
 dnl **************************************************************************
 dnl * Initialize
 dnl **************************************************************************
-AC_INIT([[[rcs-common]]],[[[0.10]]],[jingyue@cs.columbia.edu])
+AC_INIT([[[rcs]]],[[[0.10]]],[jingyue@cs.columbia.edu])
 
 dnl Identify where LLVM source tree is
 LLVM_SRC_ROOT="."

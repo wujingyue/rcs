@@ -2,8 +2,8 @@
  * Author: Jingyue
  */
 
-#include "common/IDManager.h"
-#include "common/util.h"
+#include "rcs/IDManager.h"
+#include "rcs/util.h"
 using namespace rcs;
 
 static RegisterPass<IDManager> X("manage-id",

@@ -11,9 +11,9 @@
 #include "llvm/Pass.h"
 using namespace llvm;
 
-#include "common/MBB.h"
-#include "common/typedefs.h"
-#include "common/ICFG.h"
+#include "rcs/MBB.h"
+#include "rcs/typedefs.h"
+#include "rcs/ICFG.h"
 
 namespace rcs {
 	struct ICFGBuilder: public ModulePass, public ICFG {

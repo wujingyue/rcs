@@ -6,10 +6,10 @@
 #include "llvm/Support/CommandLine.h"
 using namespace llvm;
 
-#include "common/PartialICFGBuilder.h"
-#include "common/ExecOnce.h"
-#include "common/FPCallGraph.h"
-#include "common/util.h"
+#include "rcs/PartialICFGBuilder.h"
+#include "rcs/ExecOnce.h"
+#include "rcs/FPCallGraph.h"
+#include "rcs/util.h"
 using namespace rcs;
 
 static RegisterPass<PartialICFGBuilder> X("partial-icfg-builder",

@@ -5,8 +5,8 @@
 
 #include "llvm/Value.h"
 
-#include "common/typedefs.h"
-#include "common/IDAssigner.h"
+#include "rcs/typedefs.h"
+#include "rcs/IDAssigner.h"
 
 namespace rcs {
 struct PointerAnalysis {

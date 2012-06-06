@@ -11,8 +11,8 @@
 #include "llvm/Analysis/CallGraph.h"
 #include "llvm/Analysis/AliasAnalysis.h"
 
-#include "common/FPCallGraph.h"
-#include "common/util.h"
+#include "rcs/FPCallGraph.h"
+#include "rcs/util.h"
 
 using namespace std;
 using namespace llvm;

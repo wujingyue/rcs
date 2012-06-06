@@ -7,7 +7,7 @@
 #include "llvm/Support/raw_ostream.h"
 using namespace llvm;
 
-#include "common/IDAssigner.h"
+#include "rcs/IDAssigner.h"
 using namespace rcs;
 
 namespace rcs {

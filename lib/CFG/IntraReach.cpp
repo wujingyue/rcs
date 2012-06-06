@@ -4,8 +4,8 @@
 
 #include "llvm/Support/CFG.h"
 
-#include "common/IntraReach.h"
-#include "common/util.h"
+#include "rcs/IntraReach.h"
+#include "rcs/util.h"
 
 using namespace llvm;
 using namespace rcs;

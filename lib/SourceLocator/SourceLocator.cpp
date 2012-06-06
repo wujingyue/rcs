@@ -10,9 +10,9 @@ using namespace std;
 #include "llvm/Support/CommandLine.h"
 using namespace llvm;
 
-#include "common/util.h"
-#include "common/IDAssigner.h"
-#include "common/SourceLocator.h"
+#include "rcs/util.h"
+#include "rcs/IDAssigner.h"
+#include "rcs/SourceLocator.h"
 using namespace rcs;
 
 static RegisterPass<SourceLocator> X("locate-src",

@@ -12,7 +12,7 @@
 #include "llvm/Analysis/CallGraph.h"
 #include "llvm/ADT/DenseMap.h"
 
-#include "common/typedefs.h"
+#include "rcs/typedefs.h"
 
 using namespace llvm;
 

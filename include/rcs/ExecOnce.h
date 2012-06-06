@@ -12,7 +12,7 @@
 #include "llvm/Pass.h"
 using namespace llvm;
 
-#include "common/typedefs.h"
+#include "rcs/typedefs.h"
 using namespace rcs;
 
 namespace rcs {

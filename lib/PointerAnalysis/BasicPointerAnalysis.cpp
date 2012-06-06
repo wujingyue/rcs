@@ -13,8 +13,8 @@ using namespace std;
 #include "llvm/Support/Debug.h"
 using namespace llvm;
 
-#include "common/IDAssigner.h"
-#include "common/PointerAnalysis.h"
+#include "rcs/IDAssigner.h"
+#include "rcs/PointerAnalysis.h"
 using namespace rcs;
 
 namespace rcs {

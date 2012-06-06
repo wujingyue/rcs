@@ -3,8 +3,8 @@
  * don't want <mbb> heavy-weighted. 
  */
 
-#include "common/MBB.h"
-#include "common/util.h"
+#include "rcs/MBB.h"
+#include "rcs/util.h"
 using namespace rcs;
 
 static RegisterPass<MicroBasicBlockBuilder> X("mbbb",

@@ -71,7 +71,7 @@
 #include "llvm/ADT/SparseBitVector.h"
 #include "llvm/ADT/DenseSet.h"
 // Added by Jingyue
-#include "common/PointerAnalysis.h"
+#include "rcs/PointerAnalysis.h"
 #include <algorithm>
 #include <set>
 #include <list>

@@ -11,8 +11,8 @@ using namespace std;
 #include "llvm/ADT/Statistic.h"
 using namespace llvm;
 
-#include "common/util.h"
-#include "common/IDAssigner.h"
+#include "rcs/util.h"
+#include "rcs/IDAssigner.h"
 using namespace rcs;
 
 static RegisterPass<IDAssigner> X("assign-id",

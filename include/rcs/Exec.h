@@ -12,8 +12,8 @@
  * 3. may_exec_landmark?
  */
 
-#include "common/util.h"
-#include "common/typedefs.h"
+#include "rcs/util.h"
+#include "rcs/typedefs.h"
 
 namespace rcs {
 	struct Exec: public ModulePass {

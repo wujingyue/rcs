@@ -10,8 +10,8 @@
 #include "llvm/DerivedTypes.h"
 using namespace llvm;
 
-#include "common/IDTagger.h"
-#include "common/util.h"
+#include "rcs/IDTagger.h"
+#include "rcs/util.h"
 using namespace rcs;
 
 static RegisterPass<IDTagger> X("tag-id",

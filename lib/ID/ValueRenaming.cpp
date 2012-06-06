@@ -14,7 +14,7 @@ using namespace std;
 #include "llvm/DerivedTypes.h"
 using namespace llvm;
 
-#include "common/IDAssigner.h"
+#include "rcs/IDAssigner.h"
 
 namespace rcs {
 	struct ValueRenaming: public ModulePass {

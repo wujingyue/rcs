@@ -13,8 +13,8 @@ using namespace std;
 #include "llvm/ADT/GraphTraits.h"
 using namespace llvm;
 
-#include "common/MBB.h"
-#include "common/typedefs.h"
+#include "rcs/MBB.h"
+#include "rcs/typedefs.h"
 using namespace rcs;
 
 namespace rcs {

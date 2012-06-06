@@ -12,7 +12,7 @@
 #include "llvm/Pass.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/Instruction.h"
-#include "common/typedefs.h"
+#include "rcs/typedefs.h"
 using namespace llvm;
 
 namespace rcs {

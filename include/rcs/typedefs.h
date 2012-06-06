@@ -7,7 +7,7 @@ using namespace std;
 #include "llvm/Function.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/DenseMap.h"
-#include "common/MBB.h"
+#include "rcs/MBB.h"
 using namespace llvm;
 
 namespace rcs {
