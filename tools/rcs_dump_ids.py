@@ -2,6 +2,7 @@
 
 import argparse
 import os, sys
+import rcs_utils
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = 'Dump IDs')
@@ -12,16 +13,13 @@ if __name__ == '__main__':
                         help = 'the path to the input LLVM bitcode')
     args = parser.parse_args()
 
-    llvm_prefix = os.popen('llvm-config --prefix').readline().strip()
-    cmd = 'opt '
-    cmd += '-load ' + llvm_prefix + '/lib/RCSID.so '
-    cmd += '-assign-id '
+    cmd = rcs_utils.load_all_plugins('opt')
+    cmd += ' -assign-id'
     if args.id == 'iid':
-        cmd += '-print-insts '
+        cmd += ' -print-insts'
     elif args.id == 'vid':
-        cmd += '-print-values '
-    cmd += '-analyze '
-    cmd += '< ' + args.bc
+        cmd += ' -print-values'
+    cmd += ' -analyze'
+    cmd += ' < ' + args.bc
 
-    print >> sys.stderr, cmd
-    os.system(cmd)
+    rcs_utils.invoke(cmd)

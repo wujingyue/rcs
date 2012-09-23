@@ -18,7 +18,7 @@ using namespace rcs;
 static RegisterPass<SourceLocator> X("locate-src",
 		"From line number to instruction", false, true);
 
-static cl::opt<string> Input("input", cl::desc("Input"));
+static cl::opt<string> Input("pos", cl::desc("Input"));
 
 void SourceLocator::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();

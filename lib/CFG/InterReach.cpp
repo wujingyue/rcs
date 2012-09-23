@@ -28,9 +28,6 @@ using namespace rcs;
 static RegisterPass<Reachability> X("reach",
 		"Reachability Analysis", false, true);
 
-static cl::opt<string> InputFile("input",
-		cl::desc("The input file containing the start point and the cut"));
-
 char Reachability::ID = 0;
 
 void Reachability::getAnalysisUsage(AnalysisUsage &AU) const {
@@ -44,32 +41,11 @@ Reachability::Reachability(): ModulePass(ID) {}
 bool Reachability::runOnModule(Module &M) {
 	// Topologically sort BBs in order to calculate par_postdomed more easily. 
 	topological_sort(M);
+
 	// Get exit instructions of each function. 
 	// An exit instruction is either a ReturnInst or an UnwindInst. 
 	calc_exits(&M);
-	// Do nothing more if no input file is specified. 
-	string input_file = InputFile;
-	if (input_file == "")
-		return false;
-	Instruction *start;
-	InstSet cut;
-	bool backwards;
-	if (read_input(input_file, start, cut, backwards) != 0)
-		return false;
-	// Floodfill
-	InstSet visited_nodes;
-	DenseSet<InstPair> visited_edges; 
-	floodfill(&M, start, cut, visited_nodes, visited_edges, backwards);
-	// Output results. 
-	IDAssigner &IDA = getAnalysis<IDAssigner>();
-	vector<int> result;
-	forall(InstSet, it, visited_nodes) {
-		result.push_back(IDA.getInstructionID(*it));
-	}
-	sort(result.begin(), result.end());
-	for (size_t i = 0, E = result.size(); i < E; ++i)
-		cerr << result[i] << " ";
-	cerr << endl;
+
 	// Return false since we didn't change the module. 
 	return false;
 }

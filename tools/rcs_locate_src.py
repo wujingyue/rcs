@@ -2,6 +2,7 @@
 
 import argparse
 import os, sys
+import rcs_utils
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = 'Convert line number to ' +
@@ -12,14 +13,10 @@ if __name__ == '__main__':
             help = 'file:lineno or insid')
     args = parser.parse_args()
 
-    llvm_prefix = os.popen('llvm-config --prefix').readline().strip()
-    cmd = 'opt '
-    cmd += '-load ' + llvm_prefix + '/lib/RCSID.so '
-    cmd += '-load ' + llvm_prefix + '/lib/RCSSourceLocator.so '
-    cmd += '-locate-src '
-    cmd += '-input ' + args.loc + ' '
-    cmd += '-disable-output '
-    cmd += '< ' + args.bc + ' '
+    cmd = rcs_utils.load_all_plugins('opt')
+    cmd += ' -locate-src'
+    cmd += ' -input ' + args.loc
+    cmd += ' -disable-output '
+    cmd += ' < ' + args.bc
 
-    print >> sys.stderr, cmd
-    os.system(cmd)
+    rcs_utils.invoke(cmd)

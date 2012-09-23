@@ -1719,8 +1719,6 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 ac_config_files="$ac_config_files Makefile.common"
 
-ac_config_files="$ac_config_files tools/rcs_config.py.in"
-
 
 ac_config_commands="$ac_config_commands Makefile"
 
@@ -2463,7 +2461,6 @@ do
   case $ac_config_target in
     "setup") CONFIG_COMMANDS="$CONFIG_COMMANDS setup" ;;
     "Makefile.common") CONFIG_FILES="$CONFIG_FILES Makefile.common" ;;
-    "tools/rcs_config.py.in") CONFIG_FILES="$CONFIG_FILES tools/rcs_config.py.in" ;;
     "Makefile") CONFIG_COMMANDS="$CONFIG_COMMANDS Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
