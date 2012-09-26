@@ -26,7 +26,7 @@ def load_all_plugins(cmd):
     return cmd
 
 def invoke(cmd):
-    sys.stderr.write('\n\033[1;34m')
+    sys.stderr.write('\n\033[0;34m')
     print >> sys.stderr, cmd
     sys.stderr.write('\033[m')
     ret = os.system(cmd)

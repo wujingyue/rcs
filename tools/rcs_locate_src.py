@@ -10,12 +10,12 @@ if __name__ == '__main__':
     parser.add_argument('bc',
             help = 'the path to the input LLVM bitcode')
     parser.add_argument('loc',
-            help = 'file:lineno or insid')
+            help = 'file:lineno, i<ins ID>, or v<value ID>')
     args = parser.parse_args()
 
     cmd = rcs_utils.load_all_plugins('opt')
     cmd += ' -locate-src'
-    cmd += ' -input ' + args.loc
+    cmd += ' -pos ' + args.loc
     cmd += ' -disable-output '
     cmd += ' < ' + args.bc
 
