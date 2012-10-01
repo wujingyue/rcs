@@ -28,6 +28,7 @@ namespace rcs {
 		Function *getFunction(unsigned ID) const;
 		/** Requires IDs to be consecutive. */
 		unsigned getNumValues() const { return ValueIDMapping.size(); }
+		void printValue(raw_ostream &O, const Value *V) const;
 
 	private:
 		bool addValue(Value *V);
@@ -37,7 +38,6 @@ namespace rcs {
 
 		void printInstructions(raw_ostream &O, const Module *M) const;
 		void printValues(raw_ostream &O, const Module *M) const;
-		void printValue(raw_ostream &O, const Value *V) const;
 
 		DenseMap<const Instruction *, unsigned> InsIDMapping;
 		DenseMap<const Value *, unsigned> ValueIDMapping;

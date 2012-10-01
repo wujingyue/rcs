@@ -16,7 +16,7 @@ if __name__ == '__main__':
     cmd = rcs_utils.load_all_plugins('opt')
     cmd += ' -locate-src'
     cmd += ' -pos ' + args.loc
-    cmd += ' -disable-output '
+    cmd += ' -disable-output'
     cmd += ' < ' + args.bc
 
     rcs_utils.invoke(cmd)

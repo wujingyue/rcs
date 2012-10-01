@@ -1202,8 +1202,8 @@ void Andersens::visitInstruction(Instruction &I) {
     case Instruction::Switch:
     case Instruction::Unwind:
     case Instruction::Unreachable:
-      // Removed by Jingyue. Does not exist in LLVM 2.7.
-      // case Instruction::Free:
+    // Removed by Jingyue. Does not exist in LLVM 2.7.
+    // case Instruction::Free:
     case Instruction::ICmp:
     case Instruction::FCmp:
       return;

@@ -219,6 +219,8 @@ void IDAssigner::printValue(raw_ostream &O, const Value *V) const {
     // Each time, LLVM has to construct an AssemblyWriter which takes time.
     // O << I->getParent()->getParent()->getName() << " " << I->getName();
 		O << I->getParent()->getParent()->getName() << " " << *I;
+  } else if (const Argument *Arg = dyn_cast<Argument>(V)) {
+    O << Arg->getParent()->getName() << " " << *V;
   } else {
     O << *V;
   }
