@@ -3,6 +3,7 @@
 #include <string>
 
 #include "llvm/Pass.h"
+#include "llvm/Type.h"
 #include "llvm/Module.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/raw_ostream.h"
@@ -100,17 +101,52 @@ Value *IDLookUp::lookUpValueByName(Module &M,
 
   // Look up a local value inside <TheFunctionName>.
   if (Function *F = M.getFunction(TheFunctionName)) {
-    for (Function::arg_iterator AI = F->arg_begin();
-         AI != F->arg_end(); ++AI) {
-      if (AI->getName() == TheValueName) {
-        return AI;
+    bool IsNumber = true;
+    for (unsigned long SI = 0; SI != TheValueName.length(); ++SI) {
+      if (!isdigit(TheValueName[SI])) {
+        IsNumber = false;
+        break;
       }
     }
-    for (Function::iterator BB = F->begin(); BB != F->end(); ++BB) {
-      for (BasicBlock::iterator Ins = BB->begin();
-           Ins != BB->end(); ++Ins) {
-        if (Ins->getName() == TheValueName) {
-          return Ins;
+    if (IsNumber) {
+      // Look up a local value without name.
+      int NumUnnamedValues = 0;
+      for (Function::arg_iterator AI = F->arg_begin();
+           AI != F->arg_end(); ++AI) {
+        if (!AI->hasName() && !AI->getType()->isVoidTy()) {
+          if (NumUnnamedValues == atoi(TheValueName.c_str())) {
+            return AI;
+          }
+          NumUnnamedValues++;
+        }
+      }
+      for (Function::iterator BB = F->begin(); BB != F->end(); ++BB) {
+        if (!BB->hasName()) {
+          NumUnnamedValues++;
+        }
+        for (BasicBlock::iterator Ins = BB->begin();
+             Ins != BB->end(); ++Ins) {
+          if (!Ins->hasName() && !Ins->getType()->isVoidTy()) {
+            if (NumUnnamedValues == atoi(TheValueName.c_str())) {
+              return Ins;
+            }
+            NumUnnamedValues++;
+          }
+        }
+      }
+    } else {
+      for (Function::arg_iterator AI = F->arg_begin();
+           AI != F->arg_end(); ++AI) {
+        if (AI->getName() == TheValueName) {
+          return AI;
+        }
+      }
+      for (Function::iterator BB = F->begin(); BB != F->end(); ++BB) {
+        for (BasicBlock::iterator Ins = BB->begin();
+             Ins != BB->end(); ++Ins) {
+          if (Ins->getName() == TheValueName) {
+            return Ins;
+          }
         }
       }
     }
