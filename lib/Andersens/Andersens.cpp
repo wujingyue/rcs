@@ -1206,6 +1206,8 @@ void Andersens::visitInstruction(Instruction &I) {
     // case Instruction::Free:
     case Instruction::ICmp:
     case Instruction::FCmp:
+    // Added by Jingyue
+    case Instruction::ExtractValue:
       return;
     default:
       // Is this something we aren't handling yet?
