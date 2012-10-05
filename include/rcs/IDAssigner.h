@@ -13,7 +13,7 @@ using namespace llvm;
 namespace rcs {
 	struct IDAssigner: public ModulePass {
 		static char ID;
-		static const unsigned INVALID_ID = -1;
+		static const unsigned InvalidID = -1;
 
 		IDAssigner();
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;

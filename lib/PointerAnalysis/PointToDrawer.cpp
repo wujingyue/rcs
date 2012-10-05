@@ -56,7 +56,7 @@ void PointToDrawer::printToDot(raw_ostream &O) {
     assert(Pointer->getType()->isPointerTy());
 
     unsigned PointerVid = IDA.getValueID(Pointer);
-    assert(PointerVid != IDAssigner::INVALID_ID);
+    assert(PointerVid != IDAssigner::InvalidID);
     PointerVids.insert(PointerVid);
 
     ValueList Pointees;
@@ -67,7 +67,7 @@ void PointToDrawer::printToDot(raw_ostream &O) {
       assert(Pointee != NULL);
 
       unsigned PointeeVid = IDA.getValueID(Pointee);
-      assert(PointeeVid != IDAssigner::INVALID_ID);
+      assert(PointeeVid != IDAssigner::InvalidID);
       PointeeVids.insert(PointeeVid);
       
       O << "TopLevel" << PointerVid << " -> AddrTaken" << PointeeVid << "\n";

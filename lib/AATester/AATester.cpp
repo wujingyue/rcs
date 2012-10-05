@@ -32,9 +32,9 @@ static cl::opt<bool> ValueID("value",
                              cl::desc("Use value IDs instead of "
                                       "instruction IDs"));
 static cl::opt<unsigned> ID1("id1", cl::desc("the first ID"),
-                             cl::init(IDAssigner::INVALID_ID));
+                             cl::init(IDAssigner::InvalidID));
 static cl::opt<unsigned> ID2("id2", cl::desc("the second ID"),
-                             cl::init(IDAssigner::INVALID_ID));
+                             cl::init(IDAssigner::InvalidID));
 
 char AATester::ID = 0;
 

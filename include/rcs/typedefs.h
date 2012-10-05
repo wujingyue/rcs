@@ -33,6 +33,7 @@ typedef std::vector<Value *> ValueList;
 typedef std::pair<Instruction *, Instruction *> InstPair;
 typedef std::pair<Value *, Value *> ValuePair;
 typedef std::pair<Use *, Use *> UsePair;
+typedef std::pair<BasicBlock *, BasicBlock *> BBPair;
 
 typedef DenseMap<const Function *, const Function *> ConstFuncMapping;
 typedef DenseMap<const BasicBlock *, const BasicBlock *> ConstBBMapping;

@@ -47,7 +47,7 @@ static cl::opt<string> TheValueName(
     cl::desc("Value name"));
 static cl::opt<unsigned> TheValueID(
     "value-id",
-    cl::init(IDAssigner::INVALID_ID),
+    cl::init(IDAssigner::InvalidID),
     cl::desc("Value ID"));
 
 char IDLookUp::ID = 0;
@@ -58,9 +58,9 @@ void IDLookUp::getAnalysisUsage(AnalysisUsage &AU) const {
 }
 
 bool IDLookUp::runOnModule(Module &M) {
-  assert((TheValueName == "" || TheValueID == IDAssigner::INVALID_ID) &&
+  assert((TheValueName == "" || TheValueID == IDAssigner::InvalidID) &&
          "Cannot specify both value-name and value-id");
-  if (TheValueID != IDAssigner::INVALID_ID) {
+  if (TheValueID != IDAssigner::InvalidID) {
     lookUpValueByID(TheValueID);
   } else {
     lookUpIDByName(M, TheFunctionName, TheValueName);

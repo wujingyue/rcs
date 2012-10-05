@@ -25,8 +25,8 @@ STATISTIC(NumInstructions, "Number of instructions");
 STATISTIC(NumValues, "Number of values");
 
 char IDAssigner::ID = 0;
-// static const unsigned INVALID_ID = -1; is not a definition. 
-const unsigned IDAssigner::INVALID_ID;
+// static const unsigned InvalidID = -1; is not a definition.
+const unsigned IDAssigner::InvalidID;
 
 void IDAssigner::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
@@ -134,19 +134,19 @@ void IDAssigner::extractValuesInUser(User *U) {
 unsigned IDAssigner::getValueID(const Value *V) const {
 	if (ValueIDMapping.count(V))
 		return ValueIDMapping.lookup(V);
-	return INVALID_ID;
+	return InvalidID;
 }
 
 unsigned IDAssigner::getFunctionID(const Function *F) const {
 	DenseMap<const Function *, unsigned>::const_iterator itr =
 		FunctionIDMapping.find(F);
-	return (itr == FunctionIDMapping.end() ? INVALID_ID : itr->second);
+	return (itr == FunctionIDMapping.end() ? InvalidID : itr->second);
 }
 
 unsigned IDAssigner::getInstructionID(const Instruction *I) const {
 	if (InsIDMapping.count(I))
 		return InsIDMapping.lookup(I);
-	return INVALID_ID;
+	return InvalidID;
 }
 
 Value *IDAssigner::getValue(unsigned ID) const {
