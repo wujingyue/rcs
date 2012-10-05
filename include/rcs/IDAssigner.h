@@ -22,6 +22,10 @@ namespace rcs {
 
 		unsigned getInstructionID(const Instruction *I) const;
 		unsigned getValueID(const Value *V) const;
+    // Returns whether <V> is in this module.
+    bool exists(const Value *V) const {
+      return getValueID(V) != InvalidID;
+    }
 		unsigned getFunctionID(const Function *F) const;
 		Instruction *getInstruction(unsigned ID) const;
 		Value *getValue(unsigned ID) const;
