@@ -1,4 +1,4 @@
-Need to build LLVM 3.0 from source code
+Need to build LLVM 3.0 and clang 3.0 from source code
 
 ./configure --with-llvmsrc=`llvm-config --src-root` --with-llvmobj=`llvm-config --obj-root` --prefix=`llvm-config --prefix`
 make
