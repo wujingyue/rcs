@@ -1208,6 +1208,8 @@ void Andersens::visitInstruction(Instruction &I) {
     case Instruction::FCmp:
     // Added by Jingyue
     case Instruction::ExtractValue:
+    case Instruction::InsertValue:
+    case Instruction::LandingPad:
       return;
     default:
       // Is this something we aren't handling yet?
