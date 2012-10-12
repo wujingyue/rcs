@@ -474,6 +474,31 @@ class Andersens: public ModulePass, public AliasAnalysis, public rcs::PointerAna
     }
   }
 
+  static bool isMallocCall(const Value *V) {
+    const CallInst *CI = dyn_cast<CallInst>(V);
+    if (!CI)
+      return false;
+
+    Function *Callee = CI->getCalledFunction();
+    if (Callee == 0 || !Callee->isDeclaration())
+      return false;
+    if (Callee->getName() != "malloc" &&
+        Callee->getName() != "_Znwj" && // operator new(unsigned int)
+        Callee->getName() != "_Znwm" && // operator new(unsigned long)
+        Callee->getName() != "_Znaj" && // operator new[](unsigned int)
+        Callee->getName() != "_Znam")   // operator new[](unsigned long)
+      return false;
+
+    // Check malloc prototype.
+    // FIXME: workaround for PR5130, this will be obsolete when a nobuiltin
+    // attribute will exist.
+    FunctionType *FTy = Callee->getFunctionType();
+    if (FTy->getNumParams() != 1)
+      return false;
+    return FTy->getParamType(0)->isIntegerTy(32) ||
+           FTy->getParamType(0)->isIntegerTy(64);
+  }
+
   bool runOnModule(Module &M) {
     InitializeAliasAnalysis(this);
     IdentifyObjects(M);
@@ -801,10 +826,11 @@ void Andersens::IdentifyObjects(Module &M) {
   // Add nodes for all of the functions and the instructions inside of them.
   for (Module::iterator F = M.begin(), E = M.end(); F != E; ++F) {
     // The function itself is a memory object.
+    // Added by Jingyue
+    // ValueNodes[F] must be adjacent with ReturnNodes[F].
+    ObjectNodes[F] = NumObjects++;
     unsigned First = NumObjects;
     ValueNodes[F] = NumObjects++;
-    // Added by Jingyue
-    ObjectNodes[F] = NumObjects++;
     if (isa<PointerType>(F->getFunctionType()->getReturnType()))
       ReturnNodes[F] = NumObjects++;
     if (F->getFunctionType()->isVarArg())
@@ -830,6 +856,8 @@ void Andersens::IdentifyObjects(Module &M) {
         ValueNodes[&*II] = NumObjects++;
         if (AllocaInst *AI = dyn_cast<AllocaInst>(&*II))
           ObjectNodes[AI] = NumObjects++;
+        if (isMallocCall(&*II))
+          ObjectNodes[&*II] = NumObjects++;
       }
 
       // Calls to inline asm need to be added as well because the callee isn't
@@ -1415,6 +1443,21 @@ void Andersens::AddConstraintsForCall(CallSite CS, Function *F) {
 }
 
 void Andersens::visitCallSite(CallSite CS) {
+  // Added by Jingyue
+  // AllocationInst is removed.
+  if (Instruction *II = CS.getInstruction()) {
+    if (isMallocCall(II)) {
+      unsigned ObjectIndex = getObject(II);
+      GraphNodes[ObjectIndex].setValue(II);
+      Constraints.push_back(Constraint(Constraint::AddressOf,
+                                       getNodeValue(*II),
+                                       ObjectIndex));
+      // Follow the same logic as AllocaInst.
+      // Don't call getNodeValue twice.
+      return;
+    }
+  }
+
   if (isa<PointerType>(CS.getType()))
     getNodeValue(*CS.getInstruction());
 
@@ -2870,7 +2913,7 @@ void Andersens::PrintNode(const Node *N) const {
   else
     errs() << "(unnamed)";
 
-  if (isa<GlobalValue>(V) || isa<AllocaInst>(V))
+  if (isa<GlobalValue>(V) || isa<AllocaInst>(V) || isMallocCall(V))
     if (N == &GraphNodes[getObject(V)])
       errs() << "<mem>";
 }
