@@ -1230,7 +1230,7 @@ void Andersens::visitInstruction(Instruction &I) {
   switch (I.getOpcode()) {
     case Instruction::Br:
     case Instruction::Switch:
-    case Instruction::Unwind:
+    case Instruction::Resume:
     case Instruction::Unreachable:
     // Removed by Jingyue. Does not exist in LLVM 2.7.
     // case Instruction::Free:
