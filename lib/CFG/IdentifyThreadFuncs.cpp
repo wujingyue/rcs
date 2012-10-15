@@ -43,7 +43,7 @@ bool IdentifyThreadFuncs::runOnModule(Module &M) {
 void IdentifyThreadFuncs::print(raw_ostream &O, const Module *M) const {
 	O << "Thread functions:\n";
 	forallconst(FuncSet, it, thread_funcs)
-		O << (*it)->getNameStr() << "\n";
+		O << (*it)->getName() << "\n";
 }
 
 bool IdentifyThreadFuncs::is_thread_func(Function *f) const {

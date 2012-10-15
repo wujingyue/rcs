@@ -146,7 +146,7 @@ bool FPCallGraph::runOnModule(Module &M) {
   /* Get Root (main function) */
   unsigned NumMains = 0;
   for (Module::iterator F = M.begin(); F != M.end(); ++F) {
-    if (!F->hasLocalLinkage() && F->getNameStr() == "main") {
+    if (!F->hasLocalLinkage() && F->getName() == "main") {
       NumMains++;
       Root = getOrInsertFunction(F);
     }
@@ -222,9 +222,9 @@ void FPCallGraph::print(llvm::raw_ostream &O, const Module *M) const {
     }
     MakeUnique(AllCallees);
     if (!AllCallees.empty()) {
-      O << "\t" << F->getNameStr() << " calls:\n";
+      O << "\t" << F->getName() << " calls:\n";
       forall(FuncList, I, AllCallees)
-          O << "\t\t" << (*I)->getNameStr() << "\n";
+          O << "\t\t" << (*I)->getName() << "\n";
     }
   }
   O << "Callee - Caller:\n";
@@ -237,10 +237,10 @@ void FPCallGraph::print(llvm::raw_ostream &O, const Module *M) const {
       AllCallers.push_back((*I)->getParent()->getParent());
     MakeUnique(AllCallers);
     if (!AllCallers.empty()) {
-      O << "\t" << F->getNameStr() << " is called by:\n";
+      O << "\t" << F->getName() << " is called by:\n";
       for (FuncList::iterator I = AllCallers.begin();
            I != AllCallers.end(); ++I) {
-        O << "\t\t" << (*I)->getNameStr() << "\n";
+        O << "\t\t" << (*I)->getName() << "\n";
       }
     }
   }

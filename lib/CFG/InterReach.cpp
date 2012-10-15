@@ -95,7 +95,7 @@ bool Reachability::calc_par_postdomed(
 	// If <bb> is a return block and <bb> doesn't call any blocked function,
 	// <bb> is not blocked. 
 	if (isa<ReturnInst>(bb->getTerminator()) ||
-			isa<UnwindInst>(bb->getTerminator()))
+			isa<ResumeInst>(bb->getTerminator()))
 		return false;
 	// If any successor is not blocked, then <bb> is not blocked. 
 	for (succ_iterator it = succ_begin(bb); it != succ_end(bb); ++it) {
@@ -150,7 +150,7 @@ void Reachability::calc_uncrossable(
 	DEBUG(dbgs() << "Uncrossable functions:\n";);
 	for (DenseSet<Function *>::iterator it = uncrossable.begin();
 			it != uncrossable.end(); ++it) {
-		DEBUG(dbgs() << (*it)->getNameStr() << "\n";);
+		DEBUG(dbgs() << (*it)->getName() << "\n";);
 	}
 }
 
@@ -190,7 +190,7 @@ void Reachability::dfs(
 			return;
 	}
 	
-	if (isa<ReturnInst>(x) || isa<UnwindInst>(x)) {
+	if (isa<ReturnInst>(x) || isa<ResumeInst>(x)) {
 		const vector<Instruction *> &call_sites = CG.getCallSites(
 				x->getParent()->getParent());
 		for (size_t j = 0, E = call_sites.size(); j < E; ++j) {
@@ -361,7 +361,7 @@ void Reachability::calc_exits(Module *module) {
 	for (Module::iterator fi = module->begin(); fi != module->end(); ++fi) {
 		for (Function::iterator bi = fi->begin(); bi != fi->end(); ++bi) {
 			TerminatorInst *ti = bi->getTerminator();
-			if (isa<ReturnInst>(ti) || isa<UnwindInst>(ti))
+			if (isa<ReturnInst>(ti) || isa<ResumeInst>(ti))
 				exit_insts[fi].push_back(ti);
 		}
 	}

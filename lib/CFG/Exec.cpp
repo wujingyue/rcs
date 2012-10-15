@@ -64,7 +64,7 @@ void Exec::print_call_chain(const Function *f) {
 		errs() << "\n";
 		return;
 	}
-	errs() << f->getNameStr() << " => ";
+	errs() << f->getName() << " => ";
 	print_call_chain(parent[f]);
 }
 

@@ -72,7 +72,7 @@ namespace rcs {
 	}
 
 	static inline bool is_ret(const Instruction *I) {
-		return isa<ReturnInst>(I) || isa<UnwindInst>(I);
+		return isa<ReturnInst>(I) || isa<ResumeInst>(I);
 	}
 
 	// We could make it more robust by using CallSite::get and isIntrinsicInst.

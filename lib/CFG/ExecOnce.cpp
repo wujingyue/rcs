@@ -40,14 +40,14 @@ void ExecOnce::print(raw_ostream &O, const Module *M) const {
 		forallconst(Function, bi, *fi) {
 			const BasicBlock *bb = bi;
 			if (executed_once(const_cast<BasicBlock *>(bb))) {
-				O << "\t" << bb->getParent()->getNameStr() << "."
-					<< bb->getNameStr() << "\n";
+				O << "\t" << bb->getParent()->getName() << "."
+					<< bb->getName() << "\n";
 			}
 		}
 	}
 	O << "List of reachable functions:\n";
 	forallconst(FuncSet, it, reachable_funcs)
-		O << "\t" << (*it)->getNameStr() << "\n";
+		O << "\t" << (*it)->getName() << "\n";
 }
 
 bool ExecOnce::runOnModule(Module &M) {
