@@ -11,28 +11,28 @@ using namespace std;
 using namespace llvm;
 
 namespace rcs {
-	struct ListFunctions: public ModulePass {
+	struct FunctionLister: public ModulePass {
 		static char ID;
 
-		ListFunctions();
+		FunctionLister();
 		virtual bool runOnModule(Module &M);
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 	};
 }
 using namespace rcs;
 
-static RegisterPass<ListFunctions> X("list-functions",
+static RegisterPass<FunctionLister> X("list-functions",
 		"List all functions in a module", false, true);
 
-char ListFunctions::ID = 0;
+char FunctionLister::ID = 0;
 
-void ListFunctions::getAnalysisUsage(AnalysisUsage &AU) const {
+void FunctionLister::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 }
 
-ListFunctions::ListFunctions(): ModulePass(ID) {}
+FunctionLister::FunctionLister(): ModulePass(ID) {}
 
-bool ListFunctions::runOnModule(Module &M) {
+bool FunctionLister::runOnModule(Module &M) {
 	vector<string> names;
 	for (Module::iterator f = M.begin(); f != M.end(); ++f) {
 		if (!f->isDeclaration())
