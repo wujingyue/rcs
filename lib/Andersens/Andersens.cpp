@@ -784,10 +784,10 @@ bool Andersens::pointsToConstantMemory(const Location &Loc, bool OrLocal) {
     if (Value *V = Pointee->getValue()) {
       if (!isa<GlobalValue>(V) || (isa<GlobalVariable>(V) &&
                                    !cast<GlobalVariable>(V)->isConstant()))
-        return AliasAnalysis::pointsToConstantMemory(Loc.Ptr);
+        return AliasAnalysis::pointsToConstantMemory(Loc);
     } else {
       if (i != NullObject)
-        return AliasAnalysis::pointsToConstantMemory(Loc.Ptr);
+        return AliasAnalysis::pointsToConstantMemory(Loc);
     }
   }
 
