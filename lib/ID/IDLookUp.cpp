@@ -23,7 +23,8 @@ struct IDLookUp: public ModulePass {
   virtual bool runOnModule(Module &M);
 
  private:
-  void lookUpValueByID(unsigned TheValueID);
+  void lookUpValueByID(unsigned ValueID);
+  void lookUpValueByInsID(unsigned InsID);
   Value *lookUpValueByName(Module &M,
                            const string &TheFunctionName,
                            const string &TheValueName);
@@ -39,16 +40,16 @@ static RegisterPass<IDLookUp> X(
     false,
     true);
 
-static cl::opt<string> TheFunctionName(
-    "func-name",
-    cl::desc("Function name"));
-static cl::opt<string> TheValueName(
-    "value-name",
-    cl::desc("Value name"));
-static cl::opt<unsigned> TheValueID(
-    "value-id",
-    cl::init(IDAssigner::InvalidID),
-    cl::desc("Value ID"));
+static cl::opt<string> TheFunctionName("func-name",
+                                       cl::desc("Function name"));
+static cl::opt<string> TheValueName("value-name",
+                                    cl::desc("Value name"));
+static cl::opt<unsigned> TheValueID("value-id",
+                                    cl::init(IDAssigner::InvalidID),
+                                    cl::desc("Value ID"));
+static cl::opt<unsigned> TheInsID("ins-id",
+                                  cl::init(IDAssigner::InvalidID),
+                                  cl::desc("Instruction ID"));
 
 char IDLookUp::ID = 0;
 
@@ -58,19 +59,36 @@ void IDLookUp::getAnalysisUsage(AnalysisUsage &AU) const {
 }
 
 bool IDLookUp::runOnModule(Module &M) {
-  assert((TheValueName == "" || TheValueID == IDAssigner::InvalidID) &&
-         "Cannot specify both value-name and value-id");
+  assert((TheValueName == "" ||
+          (TheValueID == IDAssigner::InvalidID &&
+           TheInsID == IDAssigner::InvalidID)) &&
+         "Cannot specify both value-name and value/ins-id");
+  assert((TheValueID == IDAssigner::InvalidID ||
+          TheInsID == IDAssigner::InvalidID) &&
+         "Cannot specify both value-id and ins-id");
   if (TheValueID != IDAssigner::InvalidID) {
     lookUpValueByID(TheValueID);
+  } else if (TheInsID != IDAssigner::InvalidID) {
+    lookUpValueByInsID(TheInsID);
   } else {
     lookUpIDByName(M, TheFunctionName, TheValueName);
   }
   return false;
 }
 
-void IDLookUp::lookUpValueByID(unsigned TheValueID) {
+void IDLookUp::lookUpValueByID(unsigned ValueID) {
   IDAssigner &IDA = getAnalysis<IDAssigner>();
-  if (Value *V = IDA.getValue(TheValueID)) {
+  if (Value *V = IDA.getValue(ValueID)) {
+    IDA.printValue(errs(), V);
+    errs() << "\n";
+  } else {
+    errs() << "Not found\n";
+  }
+}
+
+void IDLookUp::lookUpValueByInsID(unsigned InsID) {
+  IDAssigner &IDA = getAnalysis<IDAssigner>();
+  if (Value *V = IDA.getInstruction(InsID)) {
     IDA.printValue(errs(), V);
     errs() << "\n";
   } else {
