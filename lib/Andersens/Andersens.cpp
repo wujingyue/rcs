@@ -112,7 +112,11 @@ struct BitmapKeyInfo {
     return reinterpret_cast<SparseBitVector<> *>(-2);
   }
   static unsigned getHashValue(const SparseBitVector<> *bitmap) {
+#if LLVM_VERSION_CODE < LLVM_VERSION(3, 1)
     return bitmap->getHashValue();
+#else
+    return 0;
+#endif
   }
   static bool isEqual(const SparseBitVector<> *LHS,
                       const SparseBitVector<> *RHS) {
