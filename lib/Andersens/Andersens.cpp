@@ -70,8 +70,11 @@
 #include "llvm/ADT/Statistic.h"
 #include "llvm/ADT/SparseBitVector.h"
 #include "llvm/ADT/DenseSet.h"
+
 // Added by Jingyue
 #include "rcs/PointerAnalysis.h"
+#include "rcs/Version.h"
+
 #include <algorithm>
 #include <set>
 #include <list>
@@ -949,7 +952,12 @@ void Andersens::AddGlobalInitializerConstraints(unsigned NodeIndex,
     return;
   } else if (!isa<UndefValue>(C)) {
     // If this is an array or struct, include constraints for each element.
+#if LLVM_VERSION_CODE < LLVM_VERSION(3, 1)
     assert(isa<ConstantArray>(C) || isa<ConstantStruct>(C));
+#else
+    assert(isa<ConstantArray>(C) || isa<ConstantStruct>(C) ||
+           isa<ConstantDataSequential>(C));
+#endif
     for (unsigned i = 0, e = C->getNumOperands(); i != e; ++i)
       AddGlobalInitializerConstraints(NodeIndex,
                                       cast<Constant>(C->getOperand(i)));
@@ -1240,6 +1248,10 @@ void Andersens::visitInstruction(Instruction &I) {
     case Instruction::ExtractValue:
     case Instruction::InsertValue:
     case Instruction::LandingPad:
+#if LLVM_VERSION_CODE >= LLVM_VERSION(3, 1)
+    case Instruction::AtomicRMW:
+    case Instruction::AtomicCmpXchg:
+#endif
       return;
     default:
       // Is this something we aren't handling yet?
