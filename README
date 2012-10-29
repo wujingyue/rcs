@@ -1,4 +1,4 @@
-Need to build LLVM 3.0 and clang 3.0 from source code
+Need to build LLVM 3.0/3.1 and clang 3.0/3.1 from source code
 
 ./configure --prefix=`llvm-config --prefix`
 make
