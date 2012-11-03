@@ -103,7 +103,7 @@ void IDLookUp::lookUpIDByName(Module &M,
 
   if (Value *V = lookUpValueByName(M, TheFunctionName, TheValueName)) {
     IDAssigner &IDA = getAnalysis<IDAssigner>();
-    // errs() << *V << "\n";
+    errs() << "Value = " << *V << "\n";
     errs() << "Value ID = " << IDA.getValueID(V) << "\n";
   } else {
     errs() << "Not found\n";
