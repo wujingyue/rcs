@@ -70,6 +70,7 @@
 #include "llvm/ADT/Statistic.h"
 #include "llvm/ADT/SparseBitVector.h"
 #include "llvm/ADT/DenseSet.h"
+#include "llvm/IntrinsicInst.h"
 
 // Added by Jingyue
 #include "rcs/Version.h"
@@ -1036,6 +1037,28 @@ bool Andersens::AddConstraintsForExternalCall(CallSite CS, Function *F) {
                                        getNode(CS.getInstruction()),
                                        getNode(CS.getArgument(0))));
       return true;
+    }
+  }
+
+  Instruction *I = CS.getInstruction();
+  if (I) {
+    Function *ParentF = I->getParent()->getParent();
+    if (IntrinsicInst *II = dyn_cast<IntrinsicInst>(I)) {
+      Intrinsic::ID IID = II->getIntrinsicID();
+      if (IID == Intrinsic::vastart) {
+        assert(ParentF->getFunctionType()->isVarArg()
+            && "va_start in non-vararg function!");
+        Value *Arg = II->getArgOperand(0);
+        unsigned TempArg = GraphNodes.size();
+        GraphNodes.push_back(Node());
+        Constraints.push_back(Constraint(Constraint::AddressOf, TempArg,
+              getVarargNode(ParentF)));
+        Constraints.push_back(Constraint(Constraint::Store, getNode(Arg),
+              TempArg));
+        return true;
+      } else if (IID == Intrinsic::vaend) {
+        return true;
+      }
     }
   }
 
