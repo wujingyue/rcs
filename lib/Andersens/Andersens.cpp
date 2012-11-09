@@ -391,6 +391,8 @@ class Andersens: public ModulePass,
     NullObject   = 2,
     NumberSpecialNodes
   };
+
+  unsigned IntNode;
   // Stack for Tarjan's
   std::stack<unsigned> SCCStack;
   // Map from Graph Node to DFS number
@@ -647,6 +649,8 @@ class Andersens: public ModulePass,
   void visitFCmpInst(FCmpInst &ICI) {} // NOOP!
   void visitSelectInst(SelectInst &SI);
   void visitVAArg(VAArgInst &I);
+  void visitIntToPtrInst(IntToPtrInst &I);
+  void visitPtrToIntInst(PtrToIntInst &I);
   void visitInstruction(Instruction &I);
 
   //===------------------------------------------------------------------===//
@@ -796,6 +800,12 @@ void Andersens::IdentifyObjects(Module &M) {
   assert(NumObjects == NullObject && "Something changed!");
   ++NumObjects;
 
+  // its place may change
+  IntNode = 3;
+  // Object #3 always represents the int object (all ints)
+  assert(NumObjects == IntNode && "Something changed!");
+  ++NumObjects;
+
   // Add all the globals first.
   for (Module::global_iterator I = M.global_begin(), E = M.global_end();
        I != E; ++I) {
@@ -875,6 +885,8 @@ unsigned Andersens::getNodeForConstantPointer(Constant *C) {
         return getNodeForConstantPointer(CE->getOperand(0));
       case Instruction::IntToPtr:
         return UniversalSet;
+      case Instruction::PtrToInt:
+        return IntNode;
       case Instruction::BitCast:
         return getNodeForConstantPointer(CE->getOperand(0));
       default:
@@ -902,6 +914,8 @@ unsigned Andersens::getNodeForConstantPointerTarget(Constant *C) {
         return getNodeForConstantPointerTarget(CE->getOperand(0));
       case Instruction::IntToPtr:
         return UniversalSet;
+      case Instruction::PtrToInt:
+        return IntNode;
       case Instruction::BitCast:
         return getNodeForConstantPointerTarget(CE->getOperand(0));
       default:
@@ -1278,6 +1292,11 @@ void Andersens::visitLoadInst(LoadInst &LI) {
     // P1 = load P2  -->  <Load/P1/P2>
     Constraints.push_back(Constraint(Constraint::Load, getNodeValue(LI),
                                      getNode(LI.getOperand(0))));
+  else if (isa<PointerType>(LI.getOperand(0)->getType()) &&
+      isa<IntegerType>(LI.getType())) {
+    Constraints.push_back(Constraint(Constraint::Load, IntNode,
+                                     getNode(LI.getOperand(0))));
+  }
 }
 
 void Andersens::visitStoreInst(StoreInst &SI) {
@@ -1286,6 +1305,16 @@ void Andersens::visitStoreInst(StoreInst &SI) {
     Constraints.push_back(Constraint(Constraint::Store,
                                      getNode(SI.getOperand(1)),
                                      getNode(SI.getOperand(0))));
+  else if (ConstantExpr *CE = dyn_cast<ConstantExpr>(SI.getOperand(0))) {
+    if (CE->getOpcode() == Instruction::PtrToInt) {
+      Constraints.push_back(Constraint(Constraint::Store,
+            getNode(SI.getOperand(1)), getNode(CE->getOperand(0))));
+    }
+  } else if (isa<IntegerType>(SI.getOperand(0)->getType()) &&
+      isa<PointerType>(SI.getOperand(1)->getType())) {
+    Constraints.push_back(Constraint(Constraint::Store,
+          getNode(SI.getOperand(1)), IntNode));
+  }
 }
 
 void Andersens::visitGetElementPtrInst(GetElementPtrInst &GEP) {
@@ -1480,6 +1509,16 @@ void Andersens::visitCallSite(CallSite CS) {
   }
 }
 
+void Andersens::visitIntToPtrInst(IntToPtrInst &I) {
+  Constraints.push_back(Constraint(Constraint::Copy,
+        getNodeValue(I), IntNode));
+}
+
+void Andersens::visitPtrToIntInst(PtrToIntInst &I) {
+  Constraints.push_back(Constraint(Constraint::Copy,
+        IntNode, getNode(I.getOperand(0))));
+}
+
 //===----------------------------------------------------------------------===//
 //                         Constraint Solving Phase
 //===----------------------------------------------------------------------===//
@@ -1590,6 +1629,7 @@ void Andersens::ClumpAddressTaken() {
     }
   }
   MaxK = NewMaxK;
+  IntNode = Translate[IntNode];
 
   GraphNodes.swap(NewGraphNodes);
 #undef DEBUG_TYPE
@@ -2938,6 +2978,9 @@ void Andersens::PrintNode(const Node *N) const {
     return;
   } else if (N == &GraphNodes[NullObject]) {
     errs() << "<null>";
+    return;
+  } else if (N == &GraphNodes[IntNode]) {
+    errs() << "<int>";
     return;
   }
   if (!N->getValue()) {
