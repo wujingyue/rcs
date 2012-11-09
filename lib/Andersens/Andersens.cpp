@@ -1081,6 +1081,22 @@ bool Andersens::AddConstraintsForExternalCall(CallSite CS, Function *F) {
     }
   }
 
+  if (F->getName() == "pthread_create") {
+    const FunctionType *FTy = F->getFunctionType();
+    if (FTy->getNumParams() == 4
+        && isa<PointerType>(FTy->getParamType(0))
+        && isa<PointerType>(FTy->getParamType(1))
+        && isa<PointerType>(FTy->getParamType(2))
+        && isa<PointerType>(FTy->getParamType(3))) {
+      // Copy the actual argument into the formal argument.
+      Value *ThrFunc = I->getOperand(2);
+      Value *Arg = I->getOperand(3);
+      Constraints.push_back(Constraint(Constraint::Store,
+                                       getNode(ThrFunc),
+                                       getNode(Arg), CallFirstArgPos));
+    }
+  }
+
   return false;
 }
 
