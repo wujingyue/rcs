@@ -545,12 +545,12 @@ class Andersens: public ModulePass,
  private:
   /// getNode - Return the node corresponding to the specified pointer scalar.
   ///
-  unsigned getNode(Value *V) {
+  unsigned getNode(Value *V) const {
     if (Constant *C = dyn_cast<Constant>(V))
       if (!isa<GlobalValue>(C))
         return getNodeForConstantPointer(C);
 
-    DenseMap<Value*, unsigned>::iterator I = ValueNodes.find(V);
+    DenseMap<Value*, unsigned>::const_iterator I = ValueNodes.find(V);
     if (I == ValueNodes.end()) {
 #ifndef NDEBUG
       V->dump();
@@ -616,7 +616,7 @@ class Andersens: public ModulePass,
   void Condense(unsigned Node);
   void HUValNum(unsigned Node);
   void HVNValNum(unsigned Node);
-  unsigned getNodeForConstantPointer(Constant *C);
+  unsigned getNodeForConstantPointer(Constant *C) const;
   unsigned getNodeForConstantPointerTarget(Constant *C);
   void AddGlobalInitializerConstraints(unsigned, Constant *C);
 
@@ -835,6 +835,9 @@ void Andersens::IdentifyObjects(Module &M) {
       if (isa<PointerType>(I->getType()))
         ValueNodes[I] = NumObjects++;
     }
+    DEBUG(errs() << "Function info: " << F->getName() << " ObjectNode: " <<
+      ObjectNodes[F] << " ValueNode: " << ValueNodes[F] << "\n");
+    DEBUG(errs() << "MaxK[" << First << "] = " << NumObjects - First << "\n");
     MaxK[First] = NumObjects - First;
 
     // Scan the function body, creating a memory object for each heap/stack
@@ -872,7 +875,7 @@ void Andersens::IdentifyObjects(Module &M) {
 
 /// getNodeForConstantPointer - Return the node corresponding to the constant
 /// pointer itself.
-unsigned Andersens::getNodeForConstantPointer(Constant *C) {
+unsigned Andersens::getNodeForConstantPointer(Constant *C) const {
   assert(isa<PointerType>(C->getType()) && "Not a constant pointer!");
 
   if (isa<ConstantPointerNull>(C) || isa<UndefValue>(C))
@@ -1673,7 +1676,8 @@ void Andersens::ClumpAddressTaken() {
 /// receive &D from E anyway.
 
 void Andersens::HVN() {
-  DEBUG(errs() << "Beginning HVN\n");
+  errs() << "Beginning HVN\n";
+  DEBUG(PrintConstraints());
   // Build a predecessor graph.  This is like our constraint graph with the
   // edges going in the opposite direction, and there are edges for all the
   // constraints, instead of just copy constraints.  We also build implicit
@@ -1744,7 +1748,7 @@ void Andersens::HVN() {
   Node2DFS.clear();
   Node2Deleted.clear();
   Node2Visited.clear();
-  DEBUG(errs() << "Finished HVN\n");
+  errs() << "Finished HVN\n";
 
 }
 
@@ -1868,7 +1872,8 @@ void Andersens::HVNValNum(unsigned NodeIndex) {
 /// and is equivalent to value numbering the collapsed constraint graph
 /// including evaluating unions.
 void Andersens::HU() {
-  DEBUG(errs() << "Beginning HU\n");
+  errs() << "Beginning HU\n";
+  DEBUG(PrintConstraints());
   // Build a predecessor graph.  This is like our constraint graph with the
   // edges going in the opposite direction, and there are edges for all the
   // constraints, instead of just copy constraints.  We also build implicit
@@ -1951,7 +1956,8 @@ void Andersens::HU() {
   }
   // PEClass nodes will be deleted by the deleting of N->PointsTo in our caller.
   Set2PEClass.clear();
-  DEBUG(errs() << "Finished HU\n");
+  errs() << "Finished HU\n";
+  DEBUG(PrintConstraints());
 }
 
 
@@ -2210,7 +2216,7 @@ void Andersens::PrintLabels() const {
 /// operation are stored in SDT and are later used in SolveContraints()
 /// and UniteNodes().
 void Andersens::HCD() {
-  DEBUG(errs() << "Starting HCD.\n");
+  errs() << "Starting HCD.\n";
   HCDSCCRep.resize(GraphNodes.size());
 
   for (unsigned i = 0; i < GraphNodes.size(); ++i) {
@@ -2331,7 +2337,7 @@ void Andersens::Search(unsigned Node) {
 /// Optimize the constraints by performing offline variable substitution and
 /// other optimizations.
 void Andersens::OptimizeConstraints() {
-  DEBUG(errs() << "Beginning constraint optimization\n");
+  errs() << "Beginning constraint optimization\n";
 
   SDTActive = false;
 
@@ -2588,7 +2594,7 @@ void Andersens::SolveConstraints() {
   std::vector<unsigned int> RSV;
 #endif
   while( !CurrWL->empty() ) {
-    DEBUG(errs() << "Starting iteration #" << ++NumIters << "\n");
+    errs() << "Starting iteration #" << ++NumIters << "\n";
 
     Node* CurrNode;
     unsigned CurrNodeIndex;
@@ -2757,13 +2763,12 @@ void Andersens::SolveConstraints() {
                 Function *F = dyn_cast<Function>(V);
                 if (F) {
                   DEBUG(PrintConstraint(*li));
-                  DEBUG(errs() << "Should look at: " << getNode(F) << ", K = " << K << "\n");
+                  DEBUG(errs() << "For " << CurrMember << ", should look at: " << getNode(F) << ", K = " << K << "\n");
                   CurrMember = getNode(F);
                   if (K >= CallFirstArgPos) {
                     int NArg = K - CallFirstArgPos;
                     if (ReturnNodes.find(F) == ReturnNodes.end()) {
                       // no return node: minus one
-                      DEBUG(errs() << "Function " << F->getName() << " has no return node. dec K.\n");
                       K--;
                     }
                     if (VarargNodes.find(F) != VarargNodes.find(F)) {
@@ -2774,7 +2779,7 @@ void Andersens::SolveConstraints() {
                     for (int i=0; i<NArg; i++, AI++) {
                       if (!isa<PointerType>(AI->getType())) K--;
                     }
-                    DEBUG(errs() << "new K: " << K << "\n");
+                    DEBUG(errs() << "    new K: " << K << "\n");
                   }
                 }
               }
@@ -2784,6 +2789,8 @@ void Andersens::SolveConstraints() {
               continue;
             } else {
               CurrMember = FindNode(CurrMember + K);
+              if (K > 0)
+                DEBUG(errs() << "Src: " << *Src << " dst: " << *Dest << "\n");
             }
 
             // Add an edge to the graph, so we can just do regular
@@ -2989,7 +2996,19 @@ void Andersens::PrintNode(const Node *N) const {
   }
 
   assert(N->getValue() != 0 && "Never set node label!");
+
   Value *V = N->getValue();
+  if (ObjectNodes.find(V) != ObjectNodes.end() && N == &GraphNodes[getObject(V)])
+    errs() << "O" << getObject(N->getValue()) << " ";
+  else if (Function *F = dyn_cast<Function>(V)) {
+    if (isa<PointerType>(F->getFunctionType()->getReturnType()) && N == &GraphNodes[getReturnNode(F)]) {
+      errs() << "R" << getReturnNode(F) << " ";
+    } else if (F->getFunctionType()->isVarArg() && N == &GraphNodes[getVarargNode(F)]) {
+      errs() << "V" << getVarargNode(F) << " ";
+    } else errs() << "F" << getNode(V) << " ";
+  } else
+    errs() << "V" << getNode(V) << " ";
+
   if (Function *F = dyn_cast<Function>(V)) {
     if (isa<PointerType>(F->getFunctionType()->getReturnType()) &&
         N == &GraphNodes[getReturnNode(F)]) {
@@ -3010,7 +3029,8 @@ void Andersens::PrintNode(const Node *N) const {
   if (V->hasName())
     errs() << V->getName();
   else
-    errs() << "(unnamed)";
+//    errs() << "(unnamed)";
+    errs() << "(" << *V << ")";
 
   if (isa<GlobalValue>(V) || isa<AllocaInst>(V) || isMallocCall(V))
     if (N == &GraphNodes[getObject(V)])
