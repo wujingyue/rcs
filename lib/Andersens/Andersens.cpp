@@ -675,10 +675,8 @@ AliasAnalysis::AliasResult Andersens::alias(const Location &L1,
 
   // Check to see if the two pointers are known to not alias.  They don't alias
   // if their points-to sets do not intersect.
-  if (!N1->PointsTo->test(UniversalSet) && !N2->PointsTo->test(UniversalSet)) {
-    if (!N1->intersectsIgnoring(N2, NullObject))
-      return NoAlias;
-  }
+  if (!N1->intersectsIgnoring(N2, NullObject))
+    return NoAlias;
 
   return AliasAnalysis::alias(L1, L2);
 }
@@ -804,9 +802,6 @@ void Andersens::IdentifyObjects(Module &M) {
   // Add nodes for all of the functions and the instructions inside of them.
   for (Module::iterator F = M.begin(), E = M.end(); F != E; ++F) {
     // The function itself is a memory object.
-    // Added by Jingyue
-    // ValueNodes[F] must be adjacent with ReturnNodes[F].
-    ObjectNodes[F] = NumObjects++;
     unsigned First = NumObjects;
     ValueNodes[F] = NumObjects++;
     if (isa<PointerType>(F->getFunctionType()->getReturnType()))
@@ -1126,15 +1121,6 @@ void Andersens::CollectConstraints(Module &M) {
       Constraints.push_back(Constraint(Constraint::Copy, ObjectIndex,
                                        UniversalSet));
     }
-  }
-
-  // Added by Jingyue
-  for (Module::iterator F = M.begin(); F != M.end(); ++F) {
-    unsigned ObjectIndex = getObject(F);
-    Node *Object = &GraphNodes[ObjectIndex];
-    Object->setValue(F);
-    Constraints.push_back(Constraint(Constraint::AddressOf, getNodeValue(*F),
-                                     ObjectIndex));
   }
 
   for (Module::iterator F = M.begin(), E = M.end(); F != E; ++F) {
