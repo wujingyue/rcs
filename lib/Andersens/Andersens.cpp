@@ -1015,9 +1015,9 @@ bool Andersens::AddConstraintsForExternalCall(CallSite CS, Function *F) {
 
 
   // These functions do induce points-to edges.
-  if (F->getName() == "llvm.memcpy" ||
-      F->getName() == "llvm.memmove" ||
-      F->getName() == "memmove") {
+  if (F->getName().find("llvm.memcpy") == 0 ||
+      F->getName().find("llvm.memmove") == 0 ||
+      F->getName().find("memmove") == 0) {
 
     const FunctionType *FTy = F->getFunctionType();
     if (FTy->getNumParams() > 1 &&
