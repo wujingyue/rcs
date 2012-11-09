@@ -1,3 +1,4 @@
+// vim: sw=2
 //===- Andersens.cpp - Andersen's Interprocedural Alias Analysis ----------===//
 //
 //                     The LLVM Compiler Infrastructure
