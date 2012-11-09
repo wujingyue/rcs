@@ -802,13 +802,14 @@ void Andersens::IdentifyObjects(Module &M) {
     ObjectNodes[I] = NumObjects++;
     ValueNodes[I] = NumObjects++;
   }
+  for (Module::iterator F = M.begin(), E = M.end(); F != E; ++F) {
+    // Added by Jingyue
+    // The function itself is a memory object.
+    ObjectNodes[F] = NumObjects++;
+  }
 
   // Add nodes for all of the functions and the instructions inside of them.
   for (Module::iterator F = M.begin(), E = M.end(); F != E; ++F) {
-    // The function itself is a memory object.
-    // Added by Jingyue
-    // ValueNodes[F] must be adjacent with ReturnNodes[F].
-    ObjectNodes[F] = NumObjects++;
     unsigned First = NumObjects;
     ValueNodes[F] = NumObjects++;
     if (isa<PointerType>(F->getFunctionType()->getReturnType()))
@@ -1519,6 +1520,7 @@ void Andersens::ClumpAddressTaken() {
 #define DEBUG_TYPE "anders-aa-renumber"
   std::vector<unsigned> Translate;
   std::vector<Node> NewGraphNodes;
+  std::map<unsigned, unsigned> NewMaxK;
 
   Translate.resize(GraphNodes.size());
   unsigned NewPos = 0;
@@ -1581,6 +1583,13 @@ void Andersens::ClumpAddressTaken() {
     C.Src = Translate[C.Src];
     C.Dest = Translate[C.Dest];
   }
+
+  for (unsigned i = 0; i < GraphNodes.size(); ++i) {
+    if (MaxK.find(i) != MaxK.end()) {
+      NewMaxK[Translate[i]] = MaxK[i];
+    }
+  }
+  MaxK = NewMaxK;
 
   GraphNodes.swap(NewGraphNodes);
 #undef DEBUG_TYPE
@@ -2695,16 +2704,47 @@ void Andersens::SolveConstraints() {
                bi != Solution.end();
                ++bi) {
             CurrMember = *bi;
+            K = li->Offset;
 
             // Need to increment the member by K since that is where we are
             // supposed to copy to/from.  Note that in positive weight cycles,
             // which occur in address taking of fields, K can go past
             // MaxK[CurrMember] elements, even though that is all it could point
             // to.
-            if (K > 0 && K > MaxK[CurrMember])
+            if (K > 0) {
+              Value *V = GraphNodes[CurrMember].getValue();
+              if (V) {
+                Function *F = dyn_cast<Function>(V);
+                if (F) {
+                  DEBUG(PrintConstraint(*li));
+                  DEBUG(errs() << "Should look at: " << getNode(F) << ", K = " << K << "\n");
+                  CurrMember = getNode(F);
+                  if (K >= CallFirstArgPos) {
+                    int NArg = K - CallFirstArgPos;
+                    if (ReturnNodes.find(F) == ReturnNodes.end()) {
+                      // no return node: minus one
+                      DEBUG(errs() << "Function " << F->getName() << " has no return node. dec K.\n");
+                      K--;
+                    }
+                    if (VarargNodes.find(F) != VarargNodes.find(F)) {
+                      // has vararg node: plus one
+                      K++;
+                    }
+                    Function::arg_iterator AI = F->arg_begin();
+                    for (int i=0; i<NArg; i++, AI++) {
+                      if (!isa<PointerType>(AI->getType())) K--;
+                    }
+                    DEBUG(errs() << "new K: " << K << "\n");
+                  }
+                }
+              }
+            }
+
+            if (K > 0 && K > MaxK[CurrMember]) {
               continue;
-            else
+            } else {
               CurrMember = FindNode(CurrMember + K);
+            }
 
             // Add an edge to the graph, so we can just do regular
             // bitmap ior next time.  It may also let us notice a cycle.
