@@ -1055,13 +1055,25 @@ bool Andersens::AddConstraintsForExternalCall(CallSite CS, Function *F) {
   // Result = Arg0
   if (F->getName() == "realloc" || F->getName() == "strchr" ||
       F->getName() == "strrchr" || F->getName() == "strstr" ||
-      F->getName() == "strtok") {
+      F->getName() == "strtok"  || F->getName() == "stpcpy" ||
+      F->getName() == "getcwd"  || F->getName() == "strcat") {
     const FunctionType *FTy = F->getFunctionType();
     if (FTy->getNumParams() > 0 &&
         isa<PointerType>(FTy->getParamType(0))) {
       Constraints.push_back(Constraint(Constraint::Copy,
                                        getNode(CS.getInstruction()),
                                        getNode(CS.getArgument(0))));
+      return true;
+    }
+  }
+
+  if (F->getName() == "realpath") {
+    const FunctionType *FTy = F->getFunctionType();
+    if (FTy->getNumParams() > 0 &&
+        isa<PointerType>(FTy->getParamType(1))) {
+      Constraints.push_back(Constraint(Constraint::Copy,
+                                       getNode(CS.getInstruction()),
+                                       getNode(CS.getArgument(1))));
       return true;
     }
   }
