@@ -1056,7 +1056,8 @@ bool Andersens::AddConstraintsForExternalCall(CallSite CS, Function *F) {
   if (F->getName() == "realloc" || F->getName() == "strchr" ||
       F->getName() == "strrchr" || F->getName() == "strstr" ||
       F->getName() == "strtok"  || F->getName() == "stpcpy" ||
-      F->getName() == "getcwd"  || F->getName() == "strcat") {
+      F->getName() == "getcwd"  || F->getName() == "strcat" ||
+      F->getName() == "strcpy") {
     const FunctionType *FTy = F->getFunctionType();
     if (FTy->getNumParams() > 0 &&
         isa<PointerType>(FTy->getParamType(0))) {
@@ -1074,6 +1075,17 @@ bool Andersens::AddConstraintsForExternalCall(CallSite CS, Function *F) {
       Constraints.push_back(Constraint(Constraint::Copy,
                                        getNode(CS.getInstruction()),
                                        getNode(CS.getArgument(1))));
+      return true;
+    }
+  }
+
+  if (F->getName() == "freopen") {
+    const FunctionType *FTy = F->getFunctionType();
+    if (FTy->getNumParams() > 0 &&
+        isa<PointerType>(FTy->getParamType(2))) {
+      Constraints.push_back(Constraint(Constraint::Copy,
+                                       getNode(CS.getInstruction()),
+                                       getNode(CS.getArgument(2))));
       return true;
     }
   }
