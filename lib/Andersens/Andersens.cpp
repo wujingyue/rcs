@@ -1003,7 +1003,6 @@ bool Andersens::AddConstraintsForExternalCall(CallSite CS, Function *F) {
       F->getName() == "lstat" || F->getName() == "strtod" ||
       F->getName() == "strtof" || F->getName() == "strtold" ||
       F->getName() == "fopen" || F->getName() == "fdopen" ||
-      F->getName() == "freopen" ||
       F->getName() == "fflush" || F->getName() == "feof" ||
       F->getName() == "fileno" || F->getName() == "clearerr" ||
       F->getName() == "rewind" || F->getName() == "ftell" ||
