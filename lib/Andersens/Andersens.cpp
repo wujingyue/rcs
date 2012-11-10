@@ -394,6 +394,7 @@ class Andersens: public ModulePass,
   };
 
   unsigned IntNode;
+  unsigned PthreadSpecificNode;
   // Stack for Tarjan's
   std::stack<unsigned> SCCStack;
   // Map from Graph Node to DFS number
@@ -807,6 +808,12 @@ void Andersens::IdentifyObjects(Module &M) {
   assert(NumObjects == IntNode && "Something changed!");
   ++NumObjects;
 
+  // its place may change
+  PthreadSpecificNode = 4;
+  // Object #3 always represents the int object (all ints)
+  assert(NumObjects == PthreadSpecificNode && "Something changed!");
+  ++NumObjects;
+
   // Add all the globals first.
   for (Module::global_iterator I = M.global_begin(), E = M.global_end();
        I != E; ++I) {
@@ -1094,6 +1101,25 @@ bool Andersens::AddConstraintsForExternalCall(CallSite CS, Function *F) {
       Constraints.push_back(Constraint(Constraint::Store,
                                        getNode(ThrFunc),
                                        getNode(Arg), CallFirstArgPos));
+      return true;
+    }
+  }
+
+  if (F->getName() == "pthread_getspecific") {
+    const FunctionType *FTy = F->getFunctionType();
+    if (FTy->getNumParams() == 1 && isa<PointerType>(FTy->getReturnType())) {
+      Constraints.push_back(Constraint(Constraint::Copy,
+                                       getNode(CS.getInstruction()),
+                                       PthreadSpecificNode));
+      return true;
+    }
+  } else if (F->getName() == "pthread_setspecific") {
+    const FunctionType *FTy = F->getFunctionType();
+    if (FTy->getNumParams() == 2 && isa<PointerType>(FTy->getParamType(1))) {
+      Constraints.push_back(Constraint(Constraint::Copy,
+                                       PthreadSpecificNode,
+                                       getNode(CS.getInstruction()->getOperand(1))));
+      return true;
     }
   }
 
@@ -1650,6 +1676,7 @@ void Andersens::ClumpAddressTaken() {
   }
   MaxK = NewMaxK;
   IntNode = Translate[IntNode];
+  PthreadSpecificNode = Translate[PthreadSpecificNode];
 
   GraphNodes.swap(NewGraphNodes);
 #undef DEBUG_TYPE
@@ -3005,6 +3032,9 @@ void Andersens::PrintNode(const Node *N) const {
     return;
   } else if (N == &GraphNodes[IntNode]) {
     errs() << "<int>";
+    return;
+  } else if (N == &GraphNodes[PthreadSpecificNode]) {
+    errs() << "<pthread_specific>";
     return;
   }
   if (!N->getValue()) {
