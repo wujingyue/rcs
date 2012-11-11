@@ -22,6 +22,8 @@ if __name__ == '__main__':
     parser.add_argument('--ins', action = 'store_true',
             help = 'Set it if <id1> and <id2> are instruction IDs ' \
                     'instead of value IDs (default: false)')
+    parser.add_argument('--debug', action = 'store_true',
+            help = 'Set it if you want debug output (default: false)')
     args = parser.parse_args()
 
     cmd = rcs_utils.load_all_plugins('opt')
@@ -45,6 +47,8 @@ if __name__ == '__main__':
     cmd = string.join((cmd, '-test-aa'))
     if not args.ins:
         cmd = string.join((cmd, '-value'))
+    if args.debug:
+        cmd = string.join((cmd, '-debug'))
     cmd = string.join((cmd, '-id1', str(args.id1)))
     cmd = string.join((cmd, '-id2', str(args.id2)))
     cmd = string.join((cmd, '-disable-output', '<', args.bc))
