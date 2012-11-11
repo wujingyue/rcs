@@ -394,6 +394,7 @@ class Andersens: public ModulePass,
   };
 
   unsigned IntNode;
+  unsigned AggregateNode; // for extractvalue and insertvalue
   unsigned PthreadSpecificNode;
   // Stack for Tarjan's
   std::stack<unsigned> SCCStack;
@@ -625,6 +626,8 @@ class Andersens: public ModulePass,
   void AddConstraintsForNonInternalLinkage(Function *F);
   void AddConstraintsForCall(CallSite CS, Function *F);
   bool AddConstraintsForExternalCall(CallSite CS, Function *F);
+  void AddConstraintForStruct(Value *V);
+  void AddConstraintForConstantPointer(Value *V);
 
 
   void PrintNode(const Node *N) const;
@@ -653,6 +656,8 @@ class Andersens: public ModulePass,
   void visitVAArg(VAArgInst &I);
   void visitIntToPtrInst(IntToPtrInst &I);
   void visitPtrToIntInst(PtrToIntInst &I);
+  void visitExtractValue(ExtractValueInst &I);
+  void visitInsertValue(InsertValueInst &I);
   void visitInstruction(Instruction &I);
 
   //===------------------------------------------------------------------===//
@@ -809,8 +814,14 @@ void Andersens::IdentifyObjects(Module &M) {
   ++NumObjects;
 
   // its place may change
-  PthreadSpecificNode = 4;
-  // Object #3 always represents the int object (all ints)
+  AggregateNode = 4;
+  // Object #4 always represents the aggregate object (all aggregates)
+  assert(NumObjects == AggregateNode && "Something changed!");
+  ++NumObjects;
+
+  // its place may change
+  PthreadSpecificNode = 5;
+  // Object #4 always represents the pthread_specific object
   assert(NumObjects == PthreadSpecificNode && "Something changed!");
   ++NumObjects;
 
@@ -1228,6 +1239,8 @@ void Andersens::CollectConstraints(Module &M) {
 
     if (I->hasDefinitiveInitializer()) {
       AddGlobalInitializerConstraints(ObjectIndex, I->getInitializer());
+      if (isa<PointerType>(I->getType()))
+        AddConstraintForConstantPointer(I);
     } else {
       // If it doesn't have an initializer (i.e. it's defined in another
       // translation unit), it points to the universal set.
@@ -1243,6 +1256,7 @@ void Andersens::CollectConstraints(Module &M) {
     Object->setValue(F);
     Constraints.push_back(Constraint(Constraint::AddressOf, getNodeValue(*F),
                                      ObjectIndex));
+    AddConstraintForConstantPointer(F);
   }
 
   for (Module::iterator F = M.begin(), E = M.end(); F != E; ++F) {
@@ -1365,6 +1379,9 @@ void Andersens::visitLoadInst(LoadInst &LI) {
       isa<IntegerType>(LI.getType())) {
     Constraints.push_back(Constraint(Constraint::Load, IntNode,
                                      getNode(LI.getOperand(0))));
+  } else if (isa<StructType>(LI.getType())) {
+    Constraints.push_back(Constraint(Constraint::Load, AggregateNode,
+                                     getNode(LI.getOperand(0))));
   }
 }
 
@@ -1383,7 +1400,9 @@ void Andersens::visitStoreInst(StoreInst &SI) {
       isa<PointerType>(SI.getOperand(1)->getType())) {
     Constraints.push_back(Constraint(Constraint::Store,
           getNode(SI.getOperand(1)), IntNode));
-  }
+  } else if (isa<StructType>(SI.getOperand(0)->getType()))
+    Constraints.push_back(Constraint(Constraint::Store,
+          getNode(SI.getOperand(1)), AggregateNode));
 }
 
 void Andersens::visitGetElementPtrInst(GetElementPtrInst &GEP) {
@@ -1438,6 +1457,36 @@ void Andersens::visitSelectInst(SelectInst &SI) {
                                      getNode(SI.getOperand(1))));
     Constraints.push_back(Constraint(Constraint::Copy, SIN,
                                      getNode(SI.getOperand(2))));
+  } else if (isa<StructType>(SI.getType())) {
+    assert(dyn_cast<StructType>(SI.getType())->isLiteral());
+    AddConstraintForStruct(SI.getOperand(1));
+    AddConstraintForStruct(SI.getOperand(2));
+  }
+}
+
+void Andersens::AddConstraintForStruct(Value *V) {
+  if (isa<IntegerType>(V->getType())) {
+    Constraints.push_back(Constraint(Constraint::Copy, AggregateNode,
+          IntNode));
+  } else if (isa<PointerType>(V->getType())) {
+    Constraints.push_back(Constraint(Constraint::Copy, AggregateNode,
+          getNode(V)));
+  } else if (isa<StructType>(V->getType())
+          && dyn_cast<StructType>(V->getType())->isLiteral()) {
+    for (unsigned i=0; i<dyn_cast<User>(V)->getNumOperands(); i++)
+      AddConstraintForStruct(dyn_cast<User>(V)->getOperand(i));
+  }
+}
+
+void Andersens::AddConstraintForConstantPointer(Value *V) {
+  for (Value::use_iterator UI = V->use_begin(); UI != V->use_end(); UI++) {
+    if (ConstantExpr *CE = dyn_cast<ConstantExpr>(*UI)) {
+      if (CE->getOpcode() == Instruction::PtrToInt) {
+        DEBUG(errs() << V->getName() << " has been converted to int.\n");
+        Constraints.push_back(Constraint(Constraint::Copy, IntNode, getNode(V)));
+        break;
+      }
+    }
   }
 }
 
@@ -1588,6 +1637,25 @@ void Andersens::visitPtrToIntInst(PtrToIntInst &I) {
         IntNode, getNode(I.getOperand(0))));
 }
 
+void Andersens::visitExtractValue(ExtractValueInst &I) {
+  if (isa<PointerType>(I.getType()))
+    Constraints.push_back(Constraint(Constraint::Copy,
+          getNodeValue(I), AggregateNode));
+  else if (isa<IntegerType>(I.getType()))
+    Constraints.push_back(Constraint(Constraint::Copy,
+          IntNode, AggregateNode));
+}
+
+void Andersens::visitInsertValue(InsertValueInst &I) {
+  if (isa<PointerType>(I.getOperand(1)->getType())) {
+    Constraints.push_back(Constraint(Constraint::Copy,
+          AggregateNode, getNode(I.getOperand(1))));
+  }
+  else if (isa<IntegerType>(I.getOperand(1)->getType()))
+    Constraints.push_back(Constraint(Constraint::Copy,
+          AggregateNode, IntNode));
+}
+
 //===----------------------------------------------------------------------===//
 //                         Constraint Solving Phase
 //===----------------------------------------------------------------------===//
@@ -1699,6 +1767,7 @@ void Andersens::ClumpAddressTaken() {
   }
   MaxK = NewMaxK;
   IntNode = Translate[IntNode];
+  AggregateNode = Translate[AggregateNode];
   PthreadSpecificNode = Translate[PthreadSpecificNode];
 
   GraphNodes.swap(NewGraphNodes);
@@ -3055,6 +3124,9 @@ void Andersens::PrintNode(const Node *N) const {
     return;
   } else if (N == &GraphNodes[IntNode]) {
     errs() << "<int>";
+    return;
+  } else if (N == &GraphNodes[AggregateNode]) {
+    errs() << "<aggregate>";
     return;
   } else if (N == &GraphNodes[PthreadSpecificNode]) {
     errs() << "<pthread_specific>";
