@@ -1246,6 +1246,8 @@ void Andersens::CollectConstraints(Module &M) {
       // translation unit), it points to the universal set.
       Constraints.push_back(Constraint(Constraint::Copy, ObjectIndex,
                                        UniversalSet));
+      Constraints.push_back(Constraint(Constraint::Copy, getNode(I),
+                                       UniversalSet));
     }
   }
 
