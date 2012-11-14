@@ -23,27 +23,27 @@ using namespace llvm;
 using namespace rcs;
 
 namespace rcs {
-	struct PartialICFGBuilder: public ModulePass, public ICFG {
-		static char ID;
+struct PartialICFGBuilder: public ModulePass, public ICFG {
+  static char ID;
 
-		PartialICFGBuilder();
-		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
-		virtual bool runOnModule(Module &M);
+  PartialICFGBuilder();
+  virtual void getAnalysisUsage(AnalysisUsage &AU) const;
+  virtual bool runOnModule(Module &M);
 
-	private:
-		/*
-		 * Decide whether we should trace into <ins>.
-		 * Returns NULL if we shouldn't. 
-		 * We trace into <ins> iff:
-		 * 1. <ins> is a call instruction. We don't consider pthread_create calls
-		 *    the thread function. 
-		 * 2. It has only one callee.
-		 * 3. The callee isn't a declaration. 
-		 * 4. The callee can be executed only once. 
-		 */
-		Function *trace_into(Instruction *ins);
-		void dump_icfg(Module &M);
-	};
+ private:
+  /*
+   * Decide whether we should trace into <ins>.
+   * Returns NULL if we shouldn't. 
+   * We trace into <ins> iff:
+   * 1. <ins> is a call instruction. We don't consider pthread_create calls
+   *    the thread function. 
+   * 2. It has only one callee.
+   * 3. The callee isn't a declaration. 
+   * 4. The callee can be executed only once. 
+   */
+  Function *trace_into(Instruction *ins);
+  void dump_icfg(Module &M);
+};
 }
 
 #endif

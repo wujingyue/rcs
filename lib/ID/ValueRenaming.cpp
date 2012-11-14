@@ -17,25 +17,27 @@ using namespace llvm;
 #include "rcs/IDAssigner.h"
 
 namespace rcs {
-	struct ValueRenaming: public ModulePass {
-		static char ID;
+struct ValueRenaming: public ModulePass {
+  static char ID;
 
-		ValueRenaming();
-		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
-		virtual bool runOnModule(Module &M);
-	
-	private:
-		static bool should_rename(const Value *V);
-	};
+  ValueRenaming();
+  virtual void getAnalysisUsage(AnalysisUsage &AU) const;
+  virtual bool runOnModule(Module &M);
+
+ private:
+  static bool should_rename(const Value *V);
+};
 }
 using namespace rcs;
 
 static RegisterPass<ValueRenaming> X("rename-values",
-		"Rename values to their value IDs", false, false);
+                                     "Rename values to their value IDs",
+                                     false,
+                                     false);
 
 void ValueRenaming::getAnalysisUsage(AnalysisUsage &AU) const {
-	AU.setPreservesCFG();
-	AU.addRequired<IDAssigner>();
+  AU.setPreservesCFG();
+  AU.addRequired<IDAssigner>();
 }
 
 char ValueRenaming::ID = 0;
@@ -43,33 +45,33 @@ char ValueRenaming::ID = 0;
 ValueRenaming::ValueRenaming(): ModulePass(ID) {}
 
 bool ValueRenaming::should_rename(const Value *V) {
-	if (isa<Function>(V))
-		return false;
+  if (isa<Function>(V))
+    return false;
   if (isa<InlineAsm>(V))
     return false;
-	if (isa<IntegerType>(V->getType()) || isa<PointerType>(V->getType()))
-		return true;
-	return false;
+  if (isa<IntegerType>(V->getType()) || isa<PointerType>(V->getType()))
+    return true;
+  return false;
 }
 
 bool ValueRenaming::runOnModule(Module &M) {
-	IDAssigner &IDA = getAnalysis<IDAssigner>();
+  IDAssigner &IDA = getAnalysis<IDAssigner>();
 
-	for (unsigned VID = 0; VID < IDA.getNumValues(); ++VID) {
-		Value *V = IDA.getValue(VID); assert(V);
-		if (should_rename(V))
-			V->setName("");
-	}
+  for (unsigned VID = 0; VID < IDA.getNumValues(); ++VID) {
+    Value *V = IDA.getValue(VID); assert(V);
+    if (should_rename(V))
+      V->setName("");
+  }
 
-	for (unsigned VID = 0; VID < IDA.getNumValues(); ++VID) {
-		Value *V = IDA.getValue(VID); assert(V);
-		if (should_rename(V)) {
-			ostringstream OSS;
-			OSS << "x" << VID;
-			OSS.flush();
-			V->setName(OSS.str());
-		}
-	}
+  for (unsigned VID = 0; VID < IDA.getNumValues(); ++VID) {
+    Value *V = IDA.getValue(VID); assert(V);
+    if (should_rename(V)) {
+      ostringstream OSS;
+      OSS << "x" << VID;
+      OSS.flush();
+      V->setName(OSS.str());
+    }
+  }
 
-	return true;
+  return true;
 }

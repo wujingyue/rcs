@@ -16,13 +16,13 @@ using namespace llvm;
 #include "rcs/ICFG.h"
 
 namespace rcs {
-	struct ICFGBuilder: public ModulePass, public ICFG {
-		static char ID;
+struct ICFGBuilder: public ModulePass, public ICFG {
+  static char ID;
 
-		ICFGBuilder();
-		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
-		virtual bool runOnModule(Module &M);
-	};
+  ICFGBuilder();
+  virtual void getAnalysisUsage(AnalysisUsage &AU) const;
+  virtual bool runOnModule(Module &M);
+};
 }
 
 #endif

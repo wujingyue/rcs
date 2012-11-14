@@ -6,20 +6,19 @@
 using namespace llvm;
 
 struct SegfaultPass: public ModulePass {
-	static char ID;
-	SegfaultPass(): ModulePass(ID) {}
+  static char ID;
+  SegfaultPass(): ModulePass(ID) {}
 
-	virtual bool runOnModule(Module &M) {
-		return false;
-	}
+  virtual bool runOnModule(Module &M) {
+    return false;
+  }
 
-	virtual void getAnalysisUsage(AnalysisUsage &AU) const {
-		AU.addPreserved<LoopInfo>();
-		AU.addRequiredTransitive<LoopInfo>();
-	}
+  virtual void getAnalysisUsage(AnalysisUsage &AU) const {
+    AU.addPreserved<LoopInfo>();
+    AU.addRequiredTransitive<LoopInfo>();
+  }
 };
 
 char SegfaultPass::ID = 0;
 
-static RegisterPass<SegfaultPass> X("segfault",
-		"segfault", false, true);
+static RegisterPass<SegfaultPass> X("segfault", "segfault", false, true);

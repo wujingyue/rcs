@@ -9,7 +9,7 @@
 using namespace std;
 
 #define LOG_EMERGE  (1)
-#define	LOG_ALERT   (2)
+#define LOG_ALERT   (2)
 #define LOG_CRIT    (3)
 #define LOG_ERR     (4)
 #define LOG_WARNING (5)
@@ -23,10 +23,10 @@ using namespace std;
 #endif
 
 static inline void log(int level, const char *format, ...) {
-	va_list args;
-	va_start(args, format);
-	vfprintf(stderr, format, args);
-	va_end(args);
+  va_list args;
+  va_start(args, format);
+  vfprintf(stderr, format, args);
+  va_end(args);
 }
 
 #endif
