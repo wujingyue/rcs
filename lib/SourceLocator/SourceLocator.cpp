@@ -1,7 +1,3 @@
-/**
- * Author: Jingyue
- */
-
 #include <iostream>
 using namespace std;
 

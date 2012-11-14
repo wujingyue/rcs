@@ -1,7 +1,3 @@
-/**
- * Author: Jingyue
- */
-
 #include "llvm/Support/CFG.h"
 using namespace llvm;
 

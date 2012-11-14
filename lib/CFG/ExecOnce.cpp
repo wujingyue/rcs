@@ -1,7 +1,3 @@
-/**
- * Author: Jingyue
- */
-
 #define DEBUG_TYPE "exec"
 
 #include <vector>

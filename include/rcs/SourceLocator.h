@@ -1,5 +1,3 @@
-// Author: Jingyue
-
 #ifndef __RCS_SOURCE_LOCATOR_H
 #define __RCS_SOURCE_LOCATOR_H
 

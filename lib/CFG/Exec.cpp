@@ -1,7 +1,3 @@
-/**
- * Author: Jingyue
- */
-
 #include "llvm/Support/CFG.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/SCCIterator.h"

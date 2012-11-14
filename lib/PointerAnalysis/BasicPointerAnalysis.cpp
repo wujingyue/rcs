@@ -1,5 +1,3 @@
-// Author: Jingyue
-
 // The default implementation of PointerAnalysis. 
 
 #include <cstdio>

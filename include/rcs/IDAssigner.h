@@ -1,7 +1,3 @@
-/**
- * Author: Jingyue
- */
-
 #ifndef __ID_ASSIGNER_H
 #define __ID_ASSIGNER_H
 

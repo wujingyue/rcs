@@ -1,9 +1,5 @@
-/**
- * Author: Jingyue
- *
- * Decide whether an instruction can be executed only once (or never).
- * TODO: Merge with Exec.
- */
+// Decide whether an instruction can be executed only once (or never).
+// TODO: Merge with Exec.
 
 #ifndef __EXEC_ONCE_H
 #define __EXEC_ONCE_H

@@ -1,7 +1,3 @@
-/**
- * Author: Jingyue
- */
-
 #define DEBUG_TYPE "tag-id"
 
 #include "llvm/LLVMContext.h"

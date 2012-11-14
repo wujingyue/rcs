@@ -1,7 +1,3 @@
-/**
- * Author: Jingyue
- */
-
 #include "rcs/IDManager.h"
 #include "rcs/util.h"
 using namespace rcs;

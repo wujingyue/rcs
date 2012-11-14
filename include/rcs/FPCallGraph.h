@@ -1,5 +1,3 @@
-// Author: Jingyue
-//
 // Fit into the CallGraph interface, so that we can run graph algorithms
 // (e.g. SCC) on it.
 

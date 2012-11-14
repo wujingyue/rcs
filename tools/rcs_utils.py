@@ -1,5 +1,3 @@
-# Author: Jingyue
-
 import os
 import sys
 import string

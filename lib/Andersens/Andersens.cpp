@@ -73,7 +73,6 @@
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/IntrinsicInst.h"
 
-// Added by Jingyue
 #include "rcs/Version.h"
 
 #include <algorithm>
@@ -752,7 +751,7 @@ void Andersens::getMustAliases(Value *P, std::vector<Value*> &RetVals) {
         RetVals.push_back(Constant::getNullValue(P->getType()));
     }
   }
-  // Removed by Jingyue. Other AliasAnalyses are not implementing this anyway.
+  // Other AliasAnalyses are not implementing this anyway.
   // AliasAnalysis::getMustAliases(P, RetVals);
 }
 
@@ -832,7 +831,6 @@ void Andersens::IdentifyObjects(Module &M) {
     ValueNodes[I] = NumObjects++;
   }
   for (Module::iterator F = M.begin(), E = M.end(); F != E; ++F) {
-    // Added by Jingyue
     // The function itself is a memory object.
     ObjectNodes[F] = NumObjects++;
   }
@@ -1203,7 +1201,7 @@ bool Andersens::AnalyzeUsesOfFunction(Value *V) {
     } else if (ICmpInst *ICI = dyn_cast<ICmpInst>(*UI)) {
       if (!isa<ConstantPointerNull>(ICI->getOperand(1)))
         return true;  // Allow comparison against null.
-      // Removed by Jingyue. Does not exist in LLVM 2.7.
+      // Does not exist in LLVM 2.7.
       // } else if (isa<FreeInst>(*UI)) {
       //   return false;
 } else {
@@ -1251,7 +1249,6 @@ void Andersens::CollectConstraints(Module &M) {
     }
   }
 
-  // Added by Jingyue
   for (Module::iterator F = M.begin(); F != M.end(); ++F) {
     unsigned ObjectIndex = getObject(F);
     Node *Object = &GraphNodes[ObjectIndex];
@@ -1337,11 +1334,10 @@ void Andersens::visitInstruction(Instruction &I) {
     case Instruction::Switch:
     case Instruction::Resume:
     case Instruction::Unreachable:
-    // Removed by Jingyue. Does not exist in LLVM 2.7.
+    // Does not exist in LLVM 2.7.
     // case Instruction::Free:
     case Instruction::ICmp:
     case Instruction::FCmp:
-    // Added by Jingyue
     case Instruction::ExtractValue:
     case Instruction::InsertValue:
     case Instruction::LandingPad:
@@ -1604,7 +1600,6 @@ void Andersens::AddConstraintsForCall(CallSite CS, Function *F) {
 }
 
 void Andersens::visitCallSite(CallSite CS) {
-  // Added by Jingyue
   // AllocationInst is removed.
   if (Instruction *II = CS.getInstruction()) {
     if (isMallocCall(II)) {

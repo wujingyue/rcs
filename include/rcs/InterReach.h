@@ -1,6 +1,4 @@
 /**
- * Author: Jingyue
- *
  * DEPRECATED
  *
  * How to install:

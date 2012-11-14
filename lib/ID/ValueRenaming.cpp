@@ -1,8 +1,4 @@
-/**
- * Author: Jingyue
- *
- * Rename values to their value IDs. 
- */
+// Rename values to their value IDs.
 
 #include <string>
 #include <sstream>

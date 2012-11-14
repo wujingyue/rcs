@@ -1,7 +1,3 @@
-/**
- * Author: Jingyue
- */
-
 #include "llvm/Support/CFG.h"
 
 #include "rcs/IntraReach.h"

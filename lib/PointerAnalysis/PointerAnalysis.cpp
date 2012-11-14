@@ -1,5 +1,3 @@
-// Author: Jingyue
-
 // PointerAnalysis is an abstract interface for any pointer analysis. 
 // It has the interface <getPointees> which takes a pointer and returns
 // the set of all pointees of this pointer. 

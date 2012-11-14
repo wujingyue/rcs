@@ -1,5 +1,3 @@
-// Author: Jingyue
-
 #ifndef __RCS_VERSION_H
 #define __RCS_VERSION_H
 

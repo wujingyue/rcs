@@ -1,5 +1,3 @@
-// Author: Jingyue
-
 #include <cstdio>
 #include <set>
 using namespace std;

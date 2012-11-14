@@ -1,10 +1,6 @@
-/**
- * Author: Jingyue
- *
- * IDManager should be used with IDTagger.
- * IDManager builds the ID mapping from the ins_id metadata embedded
- * in the program. 
- */
+// IDManager should be used with IDTagger.
+// IDManager builds the ID mapping from the ins_id metadata embedded
+// in the program.
 
 #ifndef __IDMANAGER_H
 #define __IDMANAGER_H

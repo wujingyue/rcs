@@ -1,8 +1,4 @@
-/**
- * Author: Jingyue
- *
- * Similar to llvm::CallGraph
- */
+// Similar to llvm::CallGraph
 
 #ifndef __ICFG_H
 #define __ICFG_H

@@ -1,5 +1,3 @@
-// Author: Jingyue
-
 // TODO: Make methods static?
 // Move complicated logic into a *-inl.h file.
 

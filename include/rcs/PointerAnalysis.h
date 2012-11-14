@@ -1,5 +1,3 @@
-// Author: Jingyue
-
 #ifndef __RCS_POINTER_ANALYSIS_H
 #define __RCS_POINTER_ANALYSIS_H
 

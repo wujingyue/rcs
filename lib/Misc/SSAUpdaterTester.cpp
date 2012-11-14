@@ -1,5 +1,3 @@
-// Author: Jingyue
-
 #include "llvm/Pass.h"
 #include "llvm/Module.h"
 #include "llvm/Instructions.h"

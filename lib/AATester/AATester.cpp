@@ -1,5 +1,3 @@
-// Author: Jingyue
-
 #include "llvm/Argument.h"
 #include "llvm/Function.h"
 #include "llvm/Analysis/AliasAnalysis.h"

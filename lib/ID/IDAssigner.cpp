@@ -1,5 +1,3 @@
-// Author: Jingyue
-
 #define DEBUG_TYPE "assign-id"
 
 #include <fstream>

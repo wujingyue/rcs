@@ -1,5 +1,3 @@
-// Author: Jingyue
-
 #include <string>
 using namespace std;
 

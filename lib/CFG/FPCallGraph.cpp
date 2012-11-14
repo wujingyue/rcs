@@ -1,5 +1,3 @@
-// Author: Jingyue
-//
 // A call-graph builder considering function pointers.
 // The targets of function pointers are identified by alias analysis.
 // Users may specify which alias analysis she wants to run this pass with.

@@ -1,9 +1,5 @@
-/**
- * Author: Jingyue
- *
- * Builds a conservative ICFG.
- * It's not context-sensitive. 
- */
+// Builds a conservative ICFG.
+// It's not context-sensitive.
 
 #ifndef __ICFG_BUILDER_H
 #define __ICFG_BUILDER_H

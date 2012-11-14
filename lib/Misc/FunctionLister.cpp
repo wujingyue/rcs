@@ -1,7 +1,3 @@
-/**
- * Author: Jingyue
- */
-
 #include <vector>
 using namespace std;
 
