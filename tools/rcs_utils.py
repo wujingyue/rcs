@@ -23,10 +23,11 @@ def load_all_plugins(cmd):
     cmd = load_plugin(cmd, 'RCSAATester')
     return cmd
 
-def invoke(cmd):
+def invoke(cmd, exit_on_failure = True):
     sys.stderr.write('\n\033[0;34m')
     print >> sys.stderr, cmd
     sys.stderr.write('\033[m')
-    ret = os.system(cmd)
-    if ret != 0:
+    ret = os.WEXITSTATUS(os.system(cmd))
+    if exit_on_failure and ret != 0:
         sys.exit(ret)
+    return ret
