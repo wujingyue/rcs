@@ -16,7 +16,7 @@ struct IdentifyThreadFuncs: public BasicBlockPass {
   virtual void getAnalysisUsage(AnalysisUsage &AU) const;
   virtual bool runOnBasicBlock(BasicBlock &B);
   virtual void print(raw_ostream &O, const Module *M) const;
-  bool isThreadFunction(const Function *f) const;
+  bool isThreadFunction(const Function &F) const;
 
  private:
   ConstFuncSet ThreadFuncs;

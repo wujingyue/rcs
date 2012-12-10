@@ -48,6 +48,6 @@ void IdentifyThreadFuncs::print(raw_ostream &O, const Module *M) const {
   }
 }
 
-bool IdentifyThreadFuncs::isThreadFunction(const Function *f) const {
-  return ThreadFuncs.count(f);
+bool IdentifyThreadFuncs::isThreadFunction(const Function &F) const {
+  return ThreadFuncs.count(&F);
 }
