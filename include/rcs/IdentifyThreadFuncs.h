@@ -9,17 +9,17 @@ using namespace llvm;
 using namespace rcs;
 
 namespace rcs {
-struct IdentifyThreadFuncs: public ModulePass {
+struct IdentifyThreadFuncs: public BasicBlockPass {
   static char ID;
 
   IdentifyThreadFuncs();
   virtual void getAnalysisUsage(AnalysisUsage &AU) const;
-  virtual bool runOnModule(Module &M);
+  virtual bool runOnBasicBlock(BasicBlock &B);
   virtual void print(raw_ostream &O, const Module *M) const;
-  bool is_thread_func(Function *f) const;
+  bool isThreadFunction(const Function *f) const;
 
  private:
-  FuncSet thread_funcs;
+  ConstFuncSet ThreadFuncs;
 };
 }
 

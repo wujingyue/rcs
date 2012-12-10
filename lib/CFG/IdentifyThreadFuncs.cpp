@@ -15,25 +15,22 @@ void IdentifyThreadFuncs::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.addRequired<FPCallGraph>();
 }
 
-IdentifyThreadFuncs::IdentifyThreadFuncs(): ModulePass(ID) {}
+IdentifyThreadFuncs::IdentifyThreadFuncs(): BasicBlockPass(ID) {}
 
-bool IdentifyThreadFuncs::runOnModule(Module &M) {
-  /*
-   * Extract the called thread functions for each pthread_create.
-   */
-  thread_funcs.clear();
-  forallinst(M, ii) {
-    if (is_pthread_create(ii)) {
-      if (Value *thr_func = get_pthread_create_callee(ii)) {
-        if (isa<Function>(thr_func)) {
+bool IdentifyThreadFuncs::runOnBasicBlock(BasicBlock &B) {
+  // Extract the called thread functions for each pthread_create.
+  for (BasicBlock::iterator I = B.begin(); I != B.end(); ++I) {
+    if (is_pthread_create(I)) {
+      if (Value *ThreadFunc = get_pthread_create_callee(I)) {
+        if (isa<Function>(ThreadFunc)) {
           // pthread_create with a known function
-          thread_funcs.insert(cast<Function>(thr_func));
+          ThreadFuncs.insert(cast<Function>(ThreadFunc));
         } else {
           FPCallGraph &CG = getAnalysis<FPCallGraph>();
-          FuncList callees = CG.getCalledFunctions(ii);
-          for (size_t i = 0; i < callees.size(); ++i) {
-            if (callees[i]->getName() != "pthread_create")
-              thread_funcs.insert(callees[i]);
+          FuncList Callees = CG.getCalledFunctions(I);
+          for (size_t i = 0; i < Callees.size(); ++i) {
+            if (Callees[i]->getName() != "pthread_create")
+              ThreadFuncs.insert(Callees[i]);
           }
         }
       }
@@ -44,11 +41,13 @@ bool IdentifyThreadFuncs::runOnModule(Module &M) {
 
 void IdentifyThreadFuncs::print(raw_ostream &O, const Module *M) const {
   O << "Thread functions:\n";
-  forallconst(FuncSet, it, thread_funcs) {
-    O << (*it)->getName() << "\n";
+  for (ConstFuncSet::const_iterator I = ThreadFuncs.begin();
+       I != ThreadFuncs.end();
+       ++I) {
+    O << (*I)->getName() << "\n";
   }
 }
 
-bool IdentifyThreadFuncs::is_thread_func(Function *f) const {
-  return thread_funcs.count(f);
+bool IdentifyThreadFuncs::isThreadFunction(const Function *f) const {
+  return ThreadFuncs.count(f);
 }
