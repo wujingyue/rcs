@@ -1,4 +1,4 @@
-#define DEBUG_TYPE "assign-id"
+#define DEBUG_TYPE "rcs-id"
 
 #include <fstream>
 using namespace std;

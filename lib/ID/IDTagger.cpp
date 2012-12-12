@@ -1,4 +1,4 @@
-#define DEBUG_TYPE "tag-id"
+#define DEBUG_TYPE "rcs-id"
 
 #include "llvm/LLVMContext.h"
 #include "llvm/ADT/Statistic.h"

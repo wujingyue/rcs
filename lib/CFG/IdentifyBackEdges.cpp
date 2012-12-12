@@ -1,12 +1,19 @@
+#define DEBUG_TYPE "rcs-cfg"
+
+#include "llvm/ADT/Statistic.h"
+
 #include "rcs/IdentifyBackEdges.h"
 
 using namespace std;
+using namespace llvm;
 using namespace rcs;
 
 static RegisterPass<IdentifyBackEdges> X("identify-back-edges",
                                          "Identify back edges",
                                          false,
                                          true);
+
+STATISTIC(NumBackEdges, "Number of back edges");
 
 char IdentifyBackEdges::ID = 0;
 
@@ -42,6 +49,7 @@ bool IdentifyBackEdges::runOnModule(Module &M) {
 
   sort(BackEdges.begin(), BackEdges.end());
   BackEdges.erase(unique(BackEdges.begin(), BackEdges.end()), BackEdges.end());
+  NumBackEdges = BackEdges.size();
 
   return false;
 }

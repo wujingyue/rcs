@@ -1,4 +1,4 @@
-#define DEBUG_TYPE "exec"
+#define DEBUG_TYPE "rcs-cfg"
 
 #include <vector>
 using namespace std;
