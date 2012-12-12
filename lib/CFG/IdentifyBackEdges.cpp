@@ -34,6 +34,8 @@ void IdentifyBackEdges::DFS(BasicBlock *X,
 
 bool IdentifyBackEdges::runOnModule(Module &M) {
   for (Module::iterator F = M.begin(); F != M.end(); ++F) {
+    if (F->isDeclaration())
+      continue;
     DenseMap<BasicBlock *, Color> BBColor;
     DFS(F->begin(), BBColor);
   }
