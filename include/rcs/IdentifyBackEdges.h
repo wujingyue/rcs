@@ -24,7 +24,7 @@ struct IdentifyBackEdges: public FunctionPass {
   virtual void getAnalysisUsage(AnalysisUsage &AU) const;
   virtual bool runOnFunction(Function &F);
   virtual void print(raw_ostream &O, const Module *M) const;
-  const std::vector<BBPair> &getBackEdges() const;
+  const std::vector<BBPair> &getBackEdges() const { return BackEdges; }
 
  private:
   void DFS(BasicBlock *X);
