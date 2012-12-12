@@ -11,7 +11,8 @@
 using namespace llvm;
 
 namespace rcs {
-struct IdentifyBackEdges: public FunctionPass {
+// Make it a ModulePass because we need to assign each back edge an ID.
+struct IdentifyBackEdges: public ModulePass {
   enum Color {
     WHITE = 0,
     GRAY,
@@ -20,17 +21,16 @@ struct IdentifyBackEdges: public FunctionPass {
 
   static char ID;
 
-  IdentifyBackEdges(): FunctionPass(ID) {}
+  IdentifyBackEdges(): ModulePass(ID) {}
+  virtual bool runOnModule(Module &M);
   virtual void getAnalysisUsage(AnalysisUsage &AU) const;
-  virtual bool runOnFunction(Function &F);
-  virtual void print(raw_ostream &O, const Module *M) const;
   const std::vector<BBPair> &getBackEdges() const { return BackEdges; }
+  unsigned getID(BasicBlock *B1, BasicBlock *B2) const;
 
  private:
-  void DFS(BasicBlock *X);
+  void DFS(BasicBlock *X, DenseMap<BasicBlock *, Color> &BBColor);
 
   std::vector<BBPair> BackEdges;
-  DenseMap<BasicBlock *, Color> BBColor;
 };
 }
 

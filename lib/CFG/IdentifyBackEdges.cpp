@@ -1,5 +1,6 @@
 #include "rcs/IdentifyBackEdges.h"
 
+using namespace std;
 using namespace rcs;
 
 static RegisterPass<IdentifyBackEdges> X("identify-back-edges",
@@ -14,39 +15,41 @@ void IdentifyBackEdges::getAnalysisUsage(AnalysisUsage &AU) const {
 }
 
 // The standard DFS algorithm. Back edges go from white nodes to gray nodes.
-void IdentifyBackEdges::DFS(BasicBlock *X) {
+void IdentifyBackEdges::DFS(BasicBlock *X,
+                            DenseMap<BasicBlock *, Color> &BBColor) {
   BBColor[X] = GRAY;
   TerminatorInst *TI = X->getTerminator();
   for (unsigned i = 0; i < TI->getNumSuccessors(); ++i) {
     BasicBlock *Y = TI->getSuccessor(i);
-    if (BBColor[Y] == WHITE) {
-      DFS(Y);
-    } else if (BBColor[Y] == GRAY) {
+    if (BBColor[Y] == GRAY) {
       BackEdges.push_back(BBPair(X, Y));
+      continue;
+    }
+    if (BBColor[Y] == WHITE) {
+      DFS(Y, BBColor);
     }
   }
   BBColor[X] = BLACK;
 }
 
-bool IdentifyBackEdges::runOnFunction(Function &F) {
-  // A FunctionPass is reused for all functions. Do not expect the data
-  // structures to be automatically cleared.
-  BackEdges.clear();
-  BBColor.clear();
+bool IdentifyBackEdges::runOnModule(Module &M) {
+  for (Module::iterator F = M.begin(); F != M.end(); ++F) {
+    DenseMap<BasicBlock *, Color> BBColor;
+    DFS(F->begin(), BBColor);
+  }
 
-  DFS(F.begin());
+  sort(BackEdges.begin(), BackEdges.end());
+  BackEdges.erase(unique(BackEdges.begin(), BackEdges.end()), BackEdges.end());
 
   return false;
 }
 
-void IdentifyBackEdges::print(raw_ostream &O, const Module *M) const {
-  Function *F = NULL;
-  for (size_t i = 0; i < BackEdges.size(); ++i) {
-    BasicBlock *B1 = BackEdges[i].first, *B2 = BackEdges[i].second;
-    O << B1->getName() << " -> " << B2->getName() << "\n";
-    if (F == NULL)
-      F = B1->getParent();
-    // All back edges should share the same containing function.
-    assert(B1->getParent() == F || B2->getParent() == F);
-  }
+unsigned IdentifyBackEdges::getID(BasicBlock *B1, BasicBlock *B2) const {
+  BBPair P(B1, B2);
+  vector<BBPair>::const_iterator I = lower_bound(BackEdges.begin(),
+                                                 BackEdges.end(),
+                                                 P);
+  if (I == BackEdges.end() || *I != P)
+    return -1;
+  return I - BackEdges.begin();
 }
