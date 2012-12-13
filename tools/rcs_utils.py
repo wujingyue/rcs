@@ -23,6 +23,24 @@ def load_all_plugins(cmd):
     cmd = load_plugin(cmd, 'RCSAATester')
     return cmd
 
+def get_linking_flags(prog):
+    linking_flags = []
+    if prog.startswith('pbzip2'):
+        linking_flags.extend(['-pthread', '-lbz2'])
+    if prog.startswith('ferret'):
+        linking_flags.extend(['-pthread', '-lgsl', '-lblas'])
+    if prog.startswith('gpasswd'):
+        linking_flags.extend(['-pthread', '-lcrypt'])
+    if prog.startswith('cvs'):
+        linking_flags.extend(['-pthread', '-lcrypt'])
+    if prog.startswith('httpd'):
+        linking_flags.extend(['-pthread', '-lcrypt'])
+    if prog.startswith('mysqld'):
+        linking_flags.extend(['-pthread', '-lcrypt', '-ldl', '-lz'])
+    if prog.startswith('wget'):
+        linking_flags.extend(['-pthread', '-lrt', '-lgnutls', '-lidn'])
+    return linking_flags
+
 def invoke(cmd, exit_on_failure = True):
     sys.stderr.write('\n\033[0;34m')
     print >> sys.stderr, cmd
