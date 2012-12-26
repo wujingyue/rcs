@@ -8,6 +8,7 @@ Makefile.common
 *.swp
 config.log
 config.status
+configure.out
 include/rcs/config.h
 cscope.files
 cscope.out
