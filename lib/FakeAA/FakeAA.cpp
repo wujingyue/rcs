@@ -40,5 +40,6 @@ void *FakeAA::getAdjustedAnalysisPointer(AnalysisID PI) {
 
 AliasAnalysis::AliasResult FakeAA::alias(const Location &L1,
                                          const Location &L2) {
-  return AliasAnalysis::alias(L1, L2);
+  errs() << "FakeAA::alias\n";
+  return AliasAnalysis::NoAlias;
 }
