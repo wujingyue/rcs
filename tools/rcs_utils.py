@@ -16,9 +16,9 @@ def load_plugin(cmd, plugin):
     return string.join((cmd, '-load', get_libdir() + '/' + plugin + '.so'))
 
 def load_all_plugins(cmd):
-    cmd = load_plugin(cmd, 'RCSID')
-    cmd = load_plugin(cmd, 'RCSCFG')
-    cmd = load_plugin(cmd, 'RCSPointerAnalysis')
+    cmd = load_plugin(cmd, 'libRCSID')
+    cmd = load_plugin(cmd, 'libRCSCFG')
+    cmd = load_plugin(cmd, 'libRCSPointerAnalysis')
     cmd = load_plugin(cmd, 'RCSSourceLocator')
     cmd = load_plugin(cmd, 'RCSAATester')
     return cmd
