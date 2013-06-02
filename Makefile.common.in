@@ -21,7 +21,5 @@ PROJ_INSTALL_ROOT := @prefix@
 # Include LLVM's Master Makefile.
 include $(LLVM_SRC_ROOT)/Makefile.common
 
-AdditionalIncludes = -I$(BC2BDD_ROOT)/include
-
 CFLAGS += $(AdditionalIncludes)
 CXXFLAGS += $(AdditionalIncludes)
