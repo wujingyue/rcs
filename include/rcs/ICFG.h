@@ -141,15 +141,21 @@ struct GraphTraits<Inverse<const ICFGNode *> > {
 template<>
 struct GraphTraits<ICFG *>: public GraphTraits<ICFGNode *> {
   typedef ICFG::iterator nodes_iterator;
+  static ICFGNode *getEntryNode(ICFG *icfg) { return &icfg->front(); }
   static nodes_iterator nodes_begin(ICFG *icfg) { return icfg->begin(); }
   static nodes_iterator nodes_end(ICFG *icfg) { return icfg->end(); }
+  static unsigned size(ICFG *icfg) { return icfg->size(); }
 };
 
 template<>
 struct GraphTraits<const ICFG *>: public GraphTraits<const ICFGNode *> {
   typedef ICFG::const_iterator nodes_iterator;
+  static const ICFGNode *getEntryNode(const ICFG *icfg) {
+    return &icfg->front();
+  }
   static nodes_iterator nodes_begin(const ICFG *icfg) { return icfg->begin(); }
   static nodes_iterator nodes_end(const ICFG *icfg) { return icfg->end(); }
+  static unsigned size(const ICFG *icfg) { return icfg->size(); }
 };
 }
 
